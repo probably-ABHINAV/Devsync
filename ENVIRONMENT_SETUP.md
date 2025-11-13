@@ -1,8 +1,8 @@
-# DevSync++ Environment Configuration Guide
+# Opscord Environment Configuration Guide
 
 ## Quick Start
 
-This guide walks you through setting up all required environment variables for DevSync++.
+This guide walks you through setting up all required environment variables for Opscord.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ NEXTAUTH_URL=http://localhost:3000
 1. Go to [github.com/settings/developers/apps](https://github.com/settings/developers/apps)
 2. Click "New GitHub App"
 3. Fill in:
-   - **App Name**: DevSync++
+   - **App Name**: Opscord
    - **Homepage URL**: `http://localhost:3000`
    - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
 4. Copy:
@@ -55,24 +55,11 @@ NEXTAUTH_URL=http://localhost:3000
    - Pull requests: Read/Write
    - Issues: Read/Write
 
-## Step 4: Google OAuth Setup
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create new project
-3. Go to APIs & Services → Credentials
-4. Create OAuth 2.0 Client ID (Web application)
-5. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
-6. Copy:
-   - Client ID → `GOOGLE_CLIENT_ID`
-   - Client Secret → `GOOGLE_CLIENT_SECRET`
-
-## Step 5: Discord Setup
-
-### Create Discord Application
+## Step 4: Discord Setup
 
 1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
 2. Click "New Application"
-3. Name it "DevSync++"
+3. Name it "Opscord"
 4. Go to OAuth2 → General
 5. Copy **Client ID** → `DISCORD_CLIENT_ID`
 6. Generate Client Secret → `DISCORD_CLIENT_SECRET`
@@ -96,24 +83,27 @@ NEXTAUTH_URL=http://localhost:3000
    - Use Slash Commands
    - Manage Messages
 
-## Step 6: OpenAI API
+## Step 5: Google Gemini API
 
-1. Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-2. Create new API key
-3. Copy → `OPENAI_API_KEY`
+Replaced OpenAI with Google Gemini
 
-## Step 7: GitHub Personal Access Token
+1. Go to [ai.google.dev](https://ai.google.dev)
+2. Click "Get API Key"
+3. Create new API key
+4. Copy → `GEMINI_API_KEY`
+
+## Step 6: GitHub Personal Access Token
 
 1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
 2. Click "Generate new token"
-3. Name: "DevSync++ Bot"
+3. Name: "Opscord Bot"
 4. Select scopes:
    - `repo` (full control)
    - `admin:repo_hook` (webhook management)
    - `user` (public user data)
 5. Copy → `GITHUB_TOKEN`
 
-## Step 8: Upstash Redis (Job Queue)
+## Step 7: Upstash Redis (Job Queue)
 
 1. Go to [upstash.com/console](https://upstash.com/console)
 2. Create new Redis database
@@ -122,7 +112,7 @@ NEXTAUTH_URL=http://localhost:3000
    - REST API URL → `UPSTASH_KV_REST_API_URL`
    - REST API Token → `UPSTASH_KV_REST_API_TOKEN`
 
-## Step 9: Local Development
+## Step 8: Local Development
 
 1. Create `.env.local`:
 \`\`\`bash
@@ -147,7 +137,7 @@ curl -X POST http://localhost:3000/api/discord/register-commands
 npm run dev
 \`\`\`
 
-## Step 10: Deployment (Vercel)
+## Step 9: Deployment (Vercel)
 
 1. Push code to GitHub
 2. Go to [vercel.com](https://vercel.com)
@@ -167,13 +157,13 @@ npm run dev
 - Check GitHub organization webhook settings
 - Ensure GitHub token has `admin:repo_hook` scope
 
-### OpenAI API Errors
+### Gemini API Errors
 - Verify API key is valid
-- Check account has credits
+- Check account has quota available
 - Ensure rate limits not exceeded
 
 ## Support
 
 For issues, check:
-- GitHub Issues: github.com/devsync/devsync-plus/issues
-- Discord: discord.gg/devsync
+- GitHub Issues: github.com/opscord/opscord/issues
+- Discord: discord.gg/opscord

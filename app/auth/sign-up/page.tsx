@@ -90,7 +90,7 @@ export default function SignUpPage() {
                 <div className="p-2 rounded-lg bg-gradient-to-br from-secondary to-primary">
                   <Zap className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold gradient-text">DevSync++</h1>
+                <h1 className="text-2xl font-bold gradient-text">Opscord</h1>
               </div>
               <p className="text-sm text-muted-foreground">Join the AI-powered DevOps revolution</p>
             </div>

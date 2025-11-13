@@ -42,11 +42,11 @@ export default function SetupPage() {
         docs: "#",
       },
       {
-        key: "OPENAI_API_KEY",
-        value: process.env.OPENAI_API_KEY ? "***hidden***" : undefined,
+        key: "GEMINI_API_KEY",
+        value: process.env.GEMINI_API_KEY ? "***hidden***" : undefined,
         required: true,
-        category: "OpenAI",
-        docs: "https://platform.openai.com/docs/api-reference",
+        category: "Google Gemini",
+        docs: "https://ai.google.dev/docs",
       },
       {
         key: "JOB_QUEUE_SECRET",
@@ -81,7 +81,7 @@ export default function SetupPage() {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold gradient-text">Setup DevSync</h1>
+          <h1 className="text-4xl font-bold gradient-text">Setup Opscord</h1>
           <p className="text-muted-foreground">Configure environment variables for full functionality</p>
         </div>
 
@@ -106,7 +106,7 @@ export default function SetupPage() {
         </Card>
 
         {/* Environment Variables by Category */}
-        {["Supabase", "Application", "OpenAI", "Discord", "Job Queue"].map((category) => {
+        {["Supabase", "Application", "Google Gemini", "Discord", "Job Queue"].map((category) => {
           const categoryVars = envVars.filter((v) => v.category === category)
           if (categoryVars.length === 0) return null
 
@@ -175,7 +175,7 @@ export default function SetupPage() {
         <Card className="glass border-primary/20">
           <CardHeader>
             <CardTitle>Next Steps</CardTitle>
-            <CardDescription>Get your application fully configured</CardDescription>
+            <CardDescription>Get your Opscord application fully configured</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3">
@@ -185,8 +185,8 @@ export default function SetupPage() {
                 </a>
               </Button>
               <Button asChild variant="outline">
-                <a href="https://platform.openai.com" target="_blank" rel="noopener noreferrer">
-                  Get OpenAI API Key →
+                <a href="https://ai.google.dev/docs" target="_blank" rel="noopener noreferrer">
+                  Get Google Gemini API Key →
                 </a>
               </Button>
               <Button asChild variant="outline">

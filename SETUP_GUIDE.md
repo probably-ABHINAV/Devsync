@@ -1,7 +1,7 @@
-# DevSync - Complete Setup Guide
+# Opscord - Complete Setup Guide
 
 ## Overview
-DevSync is an AI-powered GitHub ↔ Discord DevOps bot that automates PR summarization, issue tracking, and team notifications. This guide walks through all required environment variables and configuration steps.
+Opscord is an AI-powered GitHub ↔ Discord DevOps bot that automates PR summarization, issue tracking, and team notifications. This guide walks through all required environment variables and configuration steps.
 
 ---
 
@@ -31,7 +31,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 \`\`\`
 
-**For Production:** Replace with your Vercel deployment URL (e.g., `https://devsync.vercel.app`)
+**For Production:** Replace with your Vercel deployment URL (e.g., `https://opscord.vercel.app`)
 
 **Used for:**
 - GitHub webhook URLs
@@ -40,19 +40,21 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ---
 
-### 3. OpenAI API Configuration (For AI Summarization)
+### 3. Google Gemini API Configuration (For AI Summarization)
+
+Replaced OpenAI with Google Gemini
 
 \`\`\`
-OPENAI_API_KEY=sk-your-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 \`\`\`
 
 **Where to get it:**
-1. Go to [platform.openai.com](https://platform.openai.com)
-2. Create account and go to **API keys**
-3. Click **Create new secret key**
+1. Go to [ai.google.dev](https://ai.google.dev)
+2. Click "Get API Key"
+3. Create new API key
 4. Copy and keep it safe
 
-**Cost:** Uses `gpt-4o-mini` model (~$0.0002 per PR summary)
+**Cost:** Free tier includes 15 API calls per minute
 
 ---
 
@@ -70,7 +72,7 @@ GITHUB_APP_WEBHOOK_SECRET=your-webhook-secret
 1. Go to [github.com/settings/developers](https://github.com/settings/developers)
 2. Navigate to **OAuth Apps** → **New OAuth App**
 3. Fill in:
-   - **Application name:** DevSync
+   - **Application name:** Opscord
    - **Homepage URL:** `http://localhost:3000` (or your production URL)
    - **Authorization callback URL:** `http://localhost:3000/auth/callback`
 4. Click **Register application**
@@ -81,27 +83,7 @@ GITHUB_APP_WEBHOOK_SECRET=your-webhook-secret
 
 ---
 
-### 5. Google OAuth Configuration
-
-\`\`\`
-GOOGLE_OAUTH_ID=your-google-client-id
-GOOGLE_OAUTH_SECRET=your-google-client-secret
-\`\`\`
-
-**How to create Google OAuth:**
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create new project (or select existing)
-3. Enable **Google+ API**
-4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client IDs**
-5. Select **Web application**
-6. Add authorized redirect URIs:
-   - `http://localhost:3000/auth/callback`
-   - `https://your-domain.com/auth/callback` (production)
-7. Copy **Client ID** and **Client Secret**
-
----
-
-### 6. Discord OAuth Configuration
+### 5. Discord OAuth Configuration
 
 \`\`\`
 DISCORD_OAUTH_ID=your-discord-app-id
@@ -124,7 +106,7 @@ DISCORD_BOT_TOKEN=your-discord-bot-token
 
 ---
 
-### 7. Job Queue & Redis (Upstash Integration - Already Connected)
+### 6. Job Queue & Redis (Upstash Integration - Already Connected)
 
 These should be auto-populated from your Vercel integration:
 
@@ -143,7 +125,7 @@ KV_REST_API_TOKEN=your-upstash-token
 
 ---
 
-### 8. Job Queue Security
+### 7. Job Queue Security
 
 \`\`\`
 JOB_QUEUE_SECRET=your-secure-random-string
@@ -164,9 +146,8 @@ This protects the `/api/jobs/process-queue` endpoint from unauthorized access.
 
 - [ ] Create Supabase project
 - [ ] Copy Supabase credentials
-- [ ] Create OpenAI API key
+- [ ] Create Gemini API key
 - [ ] Create GitHub OAuth App
-- [ ] Create Google OAuth credentials
 - [ ] Create Discord Application & Bot
 - [ ] Generate JOB_QUEUE_SECRET
 - [ ] Create `.env.local` file with all variables
@@ -190,15 +171,15 @@ This protects the `/api/jobs/process-queue` endpoint from unauthorized access.
 
 **Connect your organization:**
 
-1. Log in to DevSync
+1. Log in to Opscord
 2. Go to **Dashboard** → **Repositories**
 3. Click **Connect Organization**
 4. Authorize and select repositories
-5. DevSync will generate a webhook URL
+5. Opscord will generate a webhook URL
 6. Add webhook to GitHub (Settings → Webhooks):
-   - **Payload URL:** (provided by DevSync)
+   - **Payload URL:** (provided by Opscord)
    - **Events:** Pull Requests, Issues
-   - **Secret:** (provided by DevSync)
+   - **Secret:** (provided by Opscord)
 
 ### 2. Discord Integration
 
@@ -208,13 +189,13 @@ This protects the `/api/jobs/process-queue` endpoint from unauthorized access.
 2. Click **Add Discord Server**
 3. Select server and channel for notifications
 4. Choose notification type (PR, Issues, All)
-5. DevSync will join your server with bot
+5. Opscord will join your server with bot
 
 ### 3. Job Queue Setup
 
 **Automatic processing:**
 
-1. DevSync polls job queue every minute
+1. Opscord polls job queue every minute
 2. Processes PR summaries in background
 3. Sends Discord notifications when complete
 4. No manual setup required (uses Upstash Redis)
@@ -232,14 +213,12 @@ SUPABASE_SERVICE_ROLE_KEY=
 # Application (Required)
 NEXT_PUBLIC_APP_URL=
 
-# OpenAI (Required for AI features)
-OPENAI_API_KEY=
+# Google Gemini (Required for AI features)
+GEMINI_API_KEY=
 
 # OAuth Providers (Required for login)
 GITHUB_OAUTH_ID=
 GITHUB_OAUTH_SECRET=
-GOOGLE_OAUTH_ID=
-GOOGLE_OAUTH_SECRET=
 DISCORD_OAUTH_ID=
 DISCORD_OAUTH_SECRET=
 DISCORD_BOT_TOKEN=
@@ -270,8 +249,8 @@ JOB_QUEUE_SECRET=
 - Verify channel ID is correct in database
 
 ### PR summaries not generating
-- Check OpenAI API key is valid
-- Verify `OPENAI_API_KEY` is set
+- Check Gemini API key is valid
+- Verify `GEMINI_API_KEY` is set
 - Check job queue is processing
 
 ---

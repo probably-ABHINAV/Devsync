@@ -88,7 +88,7 @@ export default function DashboardPage() {
       {/* Getting started */}
       <Card className="glass border-primary/20">
         <CardHeader>
-          <CardTitle>Getting Started with DevSync++</CardTitle>
+          <CardTitle>Getting Started with Opscord</CardTitle>
           <CardDescription>Follow these steps to set up your AI-powered DevOps bot</CardDescription>
         </CardHeader>
         <CardContent>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
               {
                 step: 2,
                 title: "Setup Discord",
-                description: "Add the DevSync bot to your Discord server",
+                description: "Add the Opscord bot to your Discord server",
               },
               {
                 step: 3,
@@ -112,7 +112,7 @@ export default function DashboardPage() {
               {
                 step: 4,
                 title: "Enable AI",
-                description: "Activate AI summarization and insights",
+                description: "Activate Gemini AI summarization and insights",
               },
             ].map((item) => (
               <div

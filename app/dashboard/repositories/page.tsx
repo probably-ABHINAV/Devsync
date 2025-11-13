@@ -17,7 +17,7 @@ export default async function RepositoriesPage() {
     <div className="flex min-h-screen bg-background">
       <div className="hidden w-64 border-r border-border bg-sidebar md:block">
         <div className="p-6">
-          <h2 className="text-lg font-bold text-sidebar-foreground">DevSync</h2>
+          <h2 className="text-lg font-bold text-sidebar-foreground">Opscord</h2>
         </div>
       </div>
       <div className="flex-1">

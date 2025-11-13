@@ -16,7 +16,7 @@ export default function DemoPage() {
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="text-2xl font-bold gradient-text">DevSync++</div>
+            <div className="text-2xl font-bold gradient-text">Opscord</div>
           </Link>
           <div className="flex gap-4">
             <Link href="/demo/admin">
@@ -33,9 +33,9 @@ export default function DemoPage() {
             <Eye className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">Preview Mode</span>
           </div>
-          <h1 className="text-5xl font-bold">Explore DevSync++</h1>
+          <h1 className="text-5xl font-bold">Explore Opscord</h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            See all the features and capabilities of DevSync++ in action
+            See all the features and capabilities of Opscord in action
           </p>
         </div>
 
@@ -200,7 +200,8 @@ export default function DemoPage() {
         <div className="mt-16 glass p-12 rounded-2xl border border-primary/20 text-center space-y-6">
           <h2 className="text-3xl font-bold">Experience the Full Power</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            DevSync++ combines AI, automation, and team engagement into one powerful platform.
+            Opscord combines AI-powered automation with Google Gemini, team engagement, and DevOps excellence into one
+            powerful platform.
           </p>
           <div className="flex gap-4 justify-center pt-4">
             <Link href="/demo/admin">

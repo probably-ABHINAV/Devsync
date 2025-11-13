@@ -62,15 +62,15 @@ export default function LoginPage() {
                 <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-secondary">
                   <Zap className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold gradient-text">DevSync++</h1>
+                <h1 className="text-2xl font-bold gradient-text">Opscord</h1>
               </div>
-              <p className="text-sm text-muted-foreground">AI-powered GitHub ↔ Discord DevOps Hub</p>
+              <p className="text-sm text-muted-foreground">AI-powered GitHub ↔ Discord Operations Hub</p>
             </div>
 
             <Card className="glass border-primary/20">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-xl">Welcome Back</CardTitle>
-                <CardDescription>Sign in to your DevSync++ account</CardDescription>
+                <CardDescription>Sign in to your Opscord account</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-4">

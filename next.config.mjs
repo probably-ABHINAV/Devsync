@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  allowedDevOrigins: process.env.REPLIT_DOMAINS 
-    ? [process.env.REPLIT_DOMAINS, '127.0.0.1', 'localhost']
-    : undefined,
   images: {
     remotePatterns: [
       {
@@ -35,7 +35,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "frame-ancestors 'self' https://replit.com https://*.replit.dev https://*.replit.app",
+            value: "frame-ancestors 'self'",
           },
           {
             key: "X-XSS-Protection",
@@ -44,6 +44,9 @@ const nextConfig = {
         ],
       },
     ]
+  },
+  experimental: {
+    reactCompiler: true,
   },
 }
 

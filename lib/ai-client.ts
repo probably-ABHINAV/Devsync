@@ -1,9 +1,8 @@
-import OpenAI from "openai"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { prisma } from "@/lib/prisma"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
 export async function generatePRSummary(
   title: string,
@@ -27,18 +26,9 @@ export async function generatePRSummary(
     3. Any potential impacts
     `
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: 200,
-    })
-
-    return completion.choices[0]?.message?.content || "Could not generate summary"
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    return response.text() || "Could not generate summary"
   } catch (error) {
     console.error("[v0] Error generating PR summary:", error)
     throw error
@@ -63,20 +53,10 @@ export async function categorizeIssue(
     }
     `
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: 100,
-      temperature: 0.5,
-    })
-
-    const response = completion.choices[0]?.message?.content || "{}"
-    return JSON.parse(response)
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text() || "{}"
+    return JSON.parse(text)
   } catch (error) {
     console.error("[v0] Error categorizing issue:", error)
     return { category: "question", severity: "low" }
@@ -115,18 +95,9 @@ export async function generateDailySummary(repoName: string, days = 1): Promise<
     Provide a 3-4 sentence summary in markdown format highlighting key activities and blockers.
     `
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: 300,
-    })
-
-    return completion.choices[0]?.message?.content || ""
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    return response.text() || ""
   } catch (error) {
     console.error("[v0] Error generating daily summary:", error)
     throw error

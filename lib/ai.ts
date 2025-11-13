@@ -19,7 +19,7 @@ ${body || "No description provided"}
 Provide a clear, professional summary suitable for a development team.`
 
     const { text } = await generateText({
-      model: "openai/gpt-4o-mini",
+      model: "google/gemini-1.5-flash",
       prompt,
       maxTokens: 200,
     })
@@ -49,7 +49,7 @@ Files changed: ${files.join(", ")}
 Provide 2-3 key insights about the changes (performance, architecture, testing considerations, etc.)`
 
     const { text } = await generateText({
-      model: "openai/gpt-4o-mini",
+      model: "google/gemini-1.5-flash",
       prompt,
       maxTokens: 300,
     })

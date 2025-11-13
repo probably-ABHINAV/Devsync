@@ -6,7 +6,7 @@ export default function SignUpSuccessPage() {
           <h1 className="text-2xl font-bold">Check your email</h1>
           <p className="text-muted-foreground">
             We've sent a confirmation link to your email address. Please click it to verify your account and start using
-            DevSync.
+            Opscord.
           </p>
         </div>
       </div>

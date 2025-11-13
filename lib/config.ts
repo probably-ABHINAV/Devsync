@@ -11,8 +11,9 @@ interface Config {
   app: {
     url: string
   }
-  openai: {
+  ai: {
     apiKey: string
+    provider: string
   }
   jobQueue: {
     secret: string
@@ -35,9 +36,8 @@ export function validateConfig(): Config {
     errors.push("NEXT_PUBLIC_APP_URL is required")
   }
 
-  // OpenAI (optional but recommended)
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn("OPENAI_API_KEY not set - AI features will be disabled")
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn("⚠️  GEMINI_API_KEY not set - AI features will be disabled")
   }
 
   // Job Queue
@@ -59,8 +59,9 @@ export function validateConfig(): Config {
     app: {
       url: process.env.NEXT_PUBLIC_APP_URL!,
     },
-    openai: {
-      apiKey: process.env.OPENAI_API_KEY || "",
+    ai: {
+      apiKey: process.env.GEMINI_API_KEY || "",
+      provider: "google-gemini",
     },
     jobQueue: {
       secret: process.env.JOB_QUEUE_SECRET!,
@@ -72,7 +73,7 @@ export function validateConfig(): Config {
 if (typeof window === "undefined") {
   try {
     validateConfig()
-    console.log("✅ Environment configuration valid")
+    console.log("✅ Opscord environment configuration valid")
   } catch (error) {
     console.error(error)
   }
@@ -86,8 +87,9 @@ export const config = {
   app: {
     url: process.env.NEXT_PUBLIC_APP_URL || "",
   },
-  openai: {
-    apiKey: process.env.OPENAI_API_KEY || "",
+  ai: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+    provider: "google-gemini",
   },
   jobQueue: {
     secret: process.env.JOB_QUEUE_SECRET || "",
