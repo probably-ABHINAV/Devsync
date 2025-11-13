@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -35,7 +32,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "frame-ancestors 'self'",
+            value: "frame-ancestors 'self' https://*.replit.com https://*.replit.dev",
           },
           {
             key: "X-XSS-Protection",
@@ -44,9 +41,6 @@ const nextConfig = {
         ],
       },
     ]
-  },
-  experimental: {
-    reactCompiler: true,
   },
 }
 
