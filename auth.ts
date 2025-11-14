@@ -15,48 +15,18 @@ const authConfig: NextAuthConfig = {
   trustHost: true,
 }
 
-const providers = []
-
-if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
-  providers.push(
-    GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-  )
-}
-
-if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-  providers.push(
-    Discord({
-      clientId: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-  )
-}
-
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  providers.push(
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-  )
-}
-
-if (providers.length === 0) {
-  providers.push(
-    Credentials({
-      credentials: {},
-      authorize: async () => {
-        throw new Error("Please configure OAuth providers in environment variables")
-      },
-    }),
-  )
-}
+const providers = [
+  GitHub({
+    clientId: process.env.GITHUB_OAUTH_ID || "dummy-client-id",
+    clientSecret: process.env.GITHUB_OAUTH_SECRET || "dummy-secret",
+    allowDangerousEmailAccountLinking: true,
+  }),
+  Discord({
+    clientId: process.env.DISCORD_OAUTH_ID || "dummy-client-id",
+    clientSecret: process.env.DISCORD_OAUTH_SECRET || "dummy-secret",
+    allowDangerousEmailAccountLinking: true,
+  }),
+]
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
