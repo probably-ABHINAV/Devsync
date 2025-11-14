@@ -85,49 +85,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Getting started */}
-      <Card className="glass border-primary/20">
-        <CardHeader>
-          <CardTitle>Getting Started with Opscord</CardTitle>
-          <CardDescription>Follow these steps to set up your AI-powered DevOps bot</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                step: 1,
-                title: "Connect GitHub",
-                description: "Link your GitHub account and repositories",
-              },
-              {
-                step: 2,
-                title: "Setup Discord",
-                description: "Add the Opscord bot to your Discord server",
-              },
-              {
-                step: 3,
-                title: "Configure Webhooks",
-                description: "Enable GitHub webhook notifications",
-              },
-              {
-                step: 4,
-                title: "Enable AI",
-                description: "Activate Gemini AI summarization and insights",
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-              >
-                <Badge className="mb-2 bg-primary/20 text-primary">Step {item.step}</Badge>
-                <h3 className="font-semibold mb-1">{item.title}</h3>
-                <p className="text-xs text-muted-foreground">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Overview component */}
       <DashboardOverview />
     </div>

@@ -1,6 +1,6 @@
 import { verifyKey } from "discord-interactions"
-import { handleInteraction } from "@/lib/discord-client"
 import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
 
 const PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY || ""
 
@@ -13,19 +13,43 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request signature" }, { status: 401 })
   }
 
-  const data = JSON.parse(body)
+  const interaction = JSON.parse(body)
 
-  if (data.type === 1) {
+  if (interaction.type === 1) {
     return NextResponse.json({ type: 1 })
   }
 
-  if (data.type === 2) {
+  if (interaction.type === 2) {
+    const commandName = interaction.data?.name
+
     try {
-      await handleInteraction(data)
-      return NextResponse.json({ type: 4, data: { content: "Processing..." } })
+      switch (commandName) {
+        case "ping":
+          return NextResponse.json({
+            type: 4,
+            data: { content: "Pong! OpsCord is online." }
+          })
+        
+        case "help":
+          return NextResponse.json({
+            type: 4,
+            data: { 
+              content: "**OpsCord Commands**\n• `/ping` - Check bot status\n• `/help` - Show this help message" 
+            }
+          })
+
+        default:
+          return NextResponse.json({
+            type: 4,
+            data: { content: "Unknown command. Use `/help` for available commands." }
+          })
+      }
     } catch (error) {
-      console.error("[v0] Interaction error:", error)
-      return NextResponse.json({ error: "Failed to process interaction" }, { status: 500 })
+      console.error("Interaction error:", error)
+      return NextResponse.json({
+        type: 4,
+        data: { content: "An error occurred processing your command." }
+      })
     }
   }
 

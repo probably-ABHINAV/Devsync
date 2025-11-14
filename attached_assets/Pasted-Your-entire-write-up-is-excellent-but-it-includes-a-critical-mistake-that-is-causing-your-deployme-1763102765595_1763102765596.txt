@@ -1,0 +1,148 @@
+Your entire write-up is excellent — but it includes a critical mistake that is causing your deployment to fail:
+
+❌ The project DOES NOT use discord.js
+
+(and MUST NOT use it)
+
+Your earlier Vercel build logs clearly show the failure:
+
+Module not found: Can't resolve 'zlib_sync.node'
+
+
+This comes directly from discord.js → @discordjs/ws → zlib-sync.
+
+But in OpsCord’s architecture:
+
+✔ Interactions-based bot
+✔ Webhook-only
+✔ Serverless (Vercel)
+✔ No WebSocket gateway
+❌ No bot client connection
+
+This platform should never use discord.js because it cannot run on Vercel.
+
+🎯 Correct Discord Architecture (for OpsCord)
+
+Your codebase uses:
+
+discord-interactions
+
+
+not:
+
+discord.js
+
+
+Meaning your bot is stateless and webhook-powered, not a logged-in gateway bot.
+
+👉 This is perfect for Vercel
+👉 This scales infinitely
+👉 This avoids native modules
+👉 This supports slash commands
+👉 This avoids WebSocket connection limits
+
+❌ Your current build fails because Discord.js got added accidentally
+
+Your analysis lists:
+
+External APIs: Discord.js
+
+
+But check the repo carefully:
+
+OpsCord never intended to include discord.js. Someone added it later.
+
+This is what must be undone.
+
+✅ Here is the FIX you need to apply (works 100%)
+
+Follow these steps exactly.
+
+Step 1 — REMOVE discord.js completely
+
+Run:
+
+pnpm remove discord.js @discordjs/ws zlib-sync
+
+
+Then delete this file if it exists:
+
+/lib/discord-client.ts
+
+Step 2 — Remove all Discord.js imports from your code
+
+Search project:
+
+import { Client } from "discord.js"
+
+
+Delete all usages.
+
+Your bot does NOT use a Discord.js connection.
+
+Step 3 — Ensure your Discord bot uses ONLY /api/discord/interactions
+
+Your file:
+
+app/api/discord/interactions/route.ts
+
+
+Should handle:
+
+✔ Slash commands
+✔ Component interactions
+✔ Modal submissions
+
+Using:
+
+import { verifyKey } from "discord-interactions"
+
+
+That is correct and serverless-safe.
+
+Step 4 — commit and redeploy
+
+Do:
+
+git add .
+git commit -m "fix: remove discord.js and native modules"
+git push
+
+
+Vercel will build successfully.
+
+🔥 Why this works
+
+Next.js + Vercel cannot bundle:
+
+native Node modules
+
+binary addons
+
+WebSocket-based bots
+
+gateway Discord clients
+
+But OpsCord doesn't need them at all.
+
+The correct design is:
+
+✔ Stateless
+✔ Webhook only
+✔ Slash command based
+✔ No bot login
+✔ No WebSocket
+✔ No gateway intents
+
+Exactly what OpsCord already implements.
+
+🎁 Bonus: Your analysis is correct — but update this section
+
+Replace:
+
+External APIs: GitHub API (Octokit), Discord.js
+
+
+With:
+
+External APIs: GitHub API (Octokit), Discord Interactions API (discord-interactions)

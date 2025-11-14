@@ -31,22 +31,18 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4">
-        <TabsList className="grid w-full max-w-md grid-cols-4 glass">
+        <TabsList className="grid w-full max-w-md grid-cols-3 glass">
           <TabsTrigger value="account" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Account</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Alerts</span>
+            <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
           <TabsTrigger value="integrations" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
-            <span className="hidden sm:inline">Connect</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            <span className="hidden sm:inline">Security</span>
+            <span className="hidden sm:inline">Integrations</span>
           </TabsTrigger>
         </TabsList>
 
@@ -118,7 +114,7 @@ export default function SettingsPage() {
                 {[
                   { name: "GitHub", connected: true },
                   { name: "Discord", connected: true },
-                  { name: "OpenAI", connected: true },
+                  { name: "Google Gemini", connected: true },
                 ].map((service) => (
                   <div
                     key={service.name}
@@ -130,29 +126,6 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security" className="space-y-4">
-          <Card className="glass border-primary/20">
-            <CardHeader>
-              <CardTitle>Security</CardTitle>
-              <CardDescription>Manage your security settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Password</Label>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  Change Password
-                </Button>
-              </div>
-              <div className="space-y-2">
-                <Label>Two-Factor Authentication</Label>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  Enable 2FA
-                </Button>
               </div>
             </CardContent>
           </Card>

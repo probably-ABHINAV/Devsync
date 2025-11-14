@@ -2,7 +2,7 @@
   "name": "opscord",
   "version": "2.0.0",
   "private": true,
-  "description": "OpsCord - Connect GitHub repositories with Discord for real-time updates and AI insights powered by Google Gemini",
+  "description": "OpsCord - AI-Driven DevOps Collaboration Platform connecting GitHub and Discord with intelligent automation",
   "scripts": {
     "build": "next build",
     "db:migrate": "prisma migrate dev",
@@ -60,7 +60,6 @@
     "crypto": "latest",
     "date-fns": "4.1.0",
     "discord-interactions": "latest",
-    "discord.js": "latest",
     "embla-carousel-react": "latest",
     "framer-motion": "^11.3.28",
     "input-otp": "latest",
@@ -82,7 +81,6 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "latest",
     "ws": "latest",
-    "zlib-sync": "^0.1.9",
     "zod": "3.25.76"
   },
   "devDependencies": {

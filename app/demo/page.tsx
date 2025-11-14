@@ -1,221 +1,255 @@
-"use client"
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Zap, GitBranch, Github, MessageSquare, BarChart3, Eye, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import {
+  Zap,
+  MessageSquare,
+  BarChart3,
+  Github,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
+  Users,
+  GitPullRequest,
+  Sparkles,
+  Bot,
+} from "lucide-react"
+import Link from "next/link"
 
 export default function DemoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Navigation */}
-      <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="text-2xl font-bold gradient-text">Opscord</div>
-          </Link>
-          <div className="flex gap-4">
-            <Link href="/demo/admin">
-              <Button variant="ghost">Admin Panel</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
         {/* Header */}
-        <div className="space-y-4 mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5">
-            <Eye className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Preview Mode</span>
-          </div>
-          <h1 className="text-5xl font-bold">Explore Opscord</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            See all the features and capabilities of Opscord in action
+        <div className="text-center space-y-4">
+          <Badge className="bg-primary/10 text-primary border-primary/20">
+            <Sparkles className="h-3 w-3 mr-2" />
+            Live Demo
+          </Badge>
+          <h1 className="text-5xl font-bold gradient-text">OpsCord in Action</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            See how AI-powered PR summaries and Discord integration streamline your workflow
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="space-y-8">
-          <h2 className="text-3xl font-bold">Feature Showcase</h2>
-
-          {/* Row 1 */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary group-hover:text-secondary transition-colors" />
-                  AI PR Summarizer
-                </CardTitle>
-                <CardDescription>Intelligent pull request analysis</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">GPT-4o powered summaries including:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Code changes overview</li>
-                    <li>Key insights</li>
-                    <li>Risk assessment</li>
-                    <li>Recommendations</li>
-                  </ul>
-                </div>
-                <Badge variant="outline" className="bg-primary/10">
-                  Automated
-                </Badge>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Github className="h-5 w-5 text-secondary group-hover:text-accent transition-colors" />
-                  GitHub Integration
-                </CardTitle>
-                <CardDescription>Real-time repository webhooks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">Connect & automate:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Multiple repositories</li>
-                    <li>PR & Issue tracking</li>
-                    <li>Deployment events</li>
-                    <li>Webhook signatures</li>
-                  </ul>
-                </div>
-                <Badge variant="outline" className="bg-secondary/10">
-                  Connected
-                </Badge>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-accent group-hover:text-primary transition-colors" />
-                  Discord Bot
-                </CardTitle>
-                <CardDescription>Slash commands & notifications</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">Smart Discord integration:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Slash commands</li>
-                    <li>Rich embeds</li>
-                    <li>Channel routing</li>
-                    <li>Real-time alerts</li>
-                  </ul>
-                </div>
-                <Badge variant="outline" className="bg-accent/10">
-                  Active
-                </Badge>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Row 2 */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-green-500 group-hover:text-blue-500 transition-colors" />
-                  Gamification
-                </CardTitle>
-                <CardDescription>XP, badges, leaderboards</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">Team engagement features:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>XP rewards system</li>
-                    <li>Achievement badges</li>
-                    <li>Leaderboards</li>
-                    <li>Streak tracking</li>
-                  </ul>
-                </div>
-                <Badge variant="outline" className="bg-green-500/10">
-                  Live
-                </Badge>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GitBranch className="h-5 w-5 text-cyan-500 group-hover:text-purple-500 transition-colors" />
-                  Dashboard
-                </CardTitle>
-                <CardDescription>Centralized control hub</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">Management tools:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Repository overview</li>
-                    <li>Integration settings</li>
-                    <li>Real-time stats</li>
-                    <li>Team management</li>
-                  </ul>
-                </div>
-                <Badge variant="outline" className="bg-cyan-500/10">
-                  Ready
-                </Badge>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-primary/20 card-hover group">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5 text-orange-500 group-hover:text-pink-500 transition-colors" />
-                  System Monitor
-                </CardTitle>
-                <CardDescription>Admin observability panel</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">Monitor everything:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Webhook latency</li>
-                    <li>Job queue status</li>
-                    <li>Service health</li>
-                    <li>Event logs</li>
-                  </ul>
-                </div>
-                <Link href="/demo/admin">
-                  <Badge variant="outline" className="bg-orange-500/10 cursor-pointer">
-                    View Panel
-                  </Badge>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Stats Overview */}
+        <div className="grid md:grid-cols-4 gap-4">
+          {[
+            { icon: GitPullRequest, label: "PRs Analyzed", value: "127", color: "text-blue-500" },
+            { icon: Zap, label: "AI Summaries", value: "127", color: "text-yellow-500" },
+            { icon: MessageSquare, label: "Discord Alerts", value: "342", color: "text-purple-500" },
+            { icon: Users, label: "Active Users", value: "23", color: "text-green-500" },
+          ].map((stat, i) => {
+            const Icon = stat.icon
+            return (
+              <Card key={i} className="glass border-primary/20 card-hover">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="text-3xl font-bold">{stat.value}</p>
+                    </div>
+                    <Icon className={`h-8 w-8 ${stat.color}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
-        {/* CTA Section */}
-        <div className="mt-16 glass p-12 rounded-2xl border border-primary/20 text-center space-y-6">
-          <h2 className="text-3xl font-bold">Experience the Full Power</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Opscord combines AI-powered automation with Google Gemini, team engagement, and DevOps excellence into one
-            powerful platform.
-          </p>
-          <div className="flex gap-4 justify-center pt-4">
-            <Link href="/demo/admin">
-              <Button size="lg" className="glow-button">
-                View Admin Panel
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button size="lg" variant="outline">
-                Back Home
-              </Button>
-            </Link>
-          </div>
-        </div>
+        {/* AI PR Summary Demo */}
+        <Card className="glass border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              AI-Powered PR Summary
+            </CardTitle>
+            <CardDescription>Google Gemini analyzes code changes and generates intelligent summaries</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20">
+              <div className="flex items-start gap-3 mb-3">
+                <Github className="h-5 w-5 text-primary mt-1" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">PR #142: Add webhook retry mechanism</h3>
+                  <p className="text-sm text-muted-foreground">by @developer • 2 hours ago</p>
+                </div>
+                <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Open</Badge>
+              </div>
+              
+              <Separator className="my-3" />
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">AI Summary</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                      This PR implements an exponential backoff retry mechanism for GitHub webhooks, improving reliability
+                      when the Discord API is temporarily unavailable. The changes include a new queue system with
+                      configurable retry attempts (default: 3) and automatic job cleanup after 24 hours.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-3 gap-3 pt-2">
+                  <div className="p-3 rounded-lg bg-white/5 dark:bg-black/20">
+                    <p className="text-xs text-muted-foreground">Files Changed</p>
+                    <p className="text-lg font-semibold">8 files</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 dark:bg-black/20">
+                    <p className="text-xs text-muted-foreground">Additions</p>
+                    <p className="text-lg font-semibold text-green-500">+234</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 dark:bg-black/20">
+                    <p className="text-xs text-muted-foreground">Deletions</p>
+                    <p className="text-lg font-semibold text-red-500">-67</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Discord Integration */}
+        <Card className="glass border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-purple-500" />
+              Discord Slash Commands
+            </CardTitle>
+            <CardDescription>Powerful commands to interact with your DevOps workflow</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                {
+                  command: "/summary",
+                  description: "Get AI summary of latest PR",
+                  example: "/summary #142",
+                },
+                {
+                  command: "/stats",
+                  description: "View your contribution statistics",
+                  example: "/stats @username",
+                },
+                {
+                  command: "/create-issue",
+                  description: "Create GitHub issue from Discord",
+                  example: '/create-issue "Fix bug" priority:high',
+                },
+                {
+                  command: "/ping",
+                  description: "Check bot status and latency",
+                  example: "/ping",
+                },
+              ].map((cmd, i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-lg bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 hover:border-purple-500/40 transition-all group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Bot className="h-4 w-4 text-purple-500" />
+                    <code className="text-sm font-mono font-semibold text-purple-500">{cmd.command}</code>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{cmd.description}</p>
+                  <code className="text-xs bg-white/5 dark:bg-black/20 px-2 py-1 rounded">{cmd.example}</code>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Analytics Dashboard */}
+        <Card className="glass border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-blue-500" />
+              Team Analytics
+            </CardTitle>
+            <CardDescription>Beautiful insights into your development workflow</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* PR Timeline */}
+              <div>
+                <h3 className="text-sm font-medium mb-3">Recent Activity</h3>
+                <div className="space-y-2">
+                  {[
+                    { type: "pr", title: "Merged PR #142", user: "@developer", time: "2h ago", status: "success" },
+                    { type: "pr", title: "Opened PR #143", user: "@designer", time: "4h ago", status: "pending" },
+                    { type: "issue", title: "Closed issue #89", user: "@tester", time: "6h ago", status: "success" },
+                    { type: "pr", title: "Review requested #141", user: "@lead", time: "8h ago", status: "warning" },
+                  ].map((activity, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-white/5 dark:bg-black/20 hover:bg-white/10 dark:hover:bg-black/30 transition-all"
+                    >
+                      {activity.status === "success" && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                      {activity.status === "pending" && <Clock className="h-4 w-4 text-blue-500" />}
+                      {activity.status === "warning" && <AlertCircle className="h-4 w-4 text-yellow-500" />}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{activity.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.user} • {activity.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Leaderboard Preview */}
+              <div>
+                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-yellow-500" />
+                  Top Contributors
+                </h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {[
+                    { rank: 1, name: "@developer", xp: 2450, badge: "🥇" },
+                    { rank: 2, name: "@designer", xp: 1890, badge: "🥈" },
+                    { rank: 3, name: "@tester", xp: 1720, badge: "🥉" },
+                  ].map((user) => (
+                    <div
+                      key={user.rank}
+                      className="p-3 rounded-lg bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xl">{user.badge}</span>
+                        <span className="font-semibold">{user.name}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{user.xp} XP</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* CTA */}
+        <Card className="glass border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10">
+          <CardContent className="pt-6 text-center">
+            <h2 className="text-2xl font-bold mb-2">Ready to streamline your workflow?</h2>
+            <p className="text-muted-foreground mb-6">Get started with OpsCord in minutes</p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/auth/login">
+                <Button size="lg" className="glow-button">
+                  Get Started Free
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button size="lg" variant="outline">
+                  Learn More
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

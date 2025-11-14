@@ -1,31 +1,35 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Opscord - AI-Powered DevOps Hub",
-  description: "AI-powered GitHub ↔ Discord DevOps collaboration hub powered by Google Gemini",
-  generator: "v0.app",
-  themeColor: "#3b82f6",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
+  title: "OpsCord - AI-Powered DevOps Platform",
+  description: "Connect GitHub and Discord with intelligent automation, AI summaries, and team analytics",
+  keywords: ["DevOps", "GitHub", "Discord", "AI", "Automation", "Gemini", "Pull Requests"],
+  authors: [{ name: "OpsCord Team" }],
+  icons: {
+    icon: "/icon.svg",
   },
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased bg-background text-foreground">{children}</body>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

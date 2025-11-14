@@ -1,174 +1,171 @@
-"use client"
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Github, Zap, Users, BarChart3, Eye, Rocket, Lock, Layers } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ArrowRight, Zap, MessageSquare, BarChart3, Sparkles, Github, Bot } from "lucide-react"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Navigation */}
-      <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold gradient-text">Opscord</div>
-          <div className="flex gap-4">
-            <Link href="/demo">
-              <Button variant="ghost">View Demo</Button>
-            </Link>
-            <Link href="/demo/admin">
-              <Button variant="ghost">Admin Panel</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-6 py-20 space-y-8">
         <div className="text-center space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+          <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1">
+            <Sparkles className="h-3 w-3 mr-2" />
+            OpsCord - AI-Powered DevOps
+          </Badge>
+          
           <h1 className="text-6xl md:text-7xl font-bold leading-tight text-balance">
-            <span className="gradient-text">AI-Powered</span>
+            <span className="gradient-text">Intelligent PR</span>
             <br />
-            GitHub ↔ Discord
+            Summaries for
             <br />
-            Operations Hub
+            Discord Teams
           </h1>
+          
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Automate your development workflow with intelligent PR summarization, real-time Discord notifications,
-            AI-powered insights using Google Gemini, and comprehensive team analytics.
+            Automate your workflow with AI-powered PR summarization, real-time Discord notifications,
+            and beautiful analytics - all powered by Google Gemini.
           </p>
+          
           <div className="flex gap-4 justify-center pt-4 flex-wrap">
             <Link href="/demo">
               <Button size="lg" className="glow-button gap-2">
-                Explore Demo <ArrowRight className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
+                View Demo
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/demo/admin">
+            <Link href="/auth/login">
               <Button size="lg" variant="outline" className="gap-2 bg-transparent">
-                <Eye className="h-4 w-4" />
-                Admin Panel
+                Get Started Free
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Features Grid - Enhanced with more features */}
-        <div className="grid md:grid-cols-3 gap-6 pt-20">
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-100">
-            <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-              <Rocket className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">AI PR Summarizer</h3>
-            <p className="text-sm text-muted-foreground">
-              Automated pull request summaries powered by Google Gemini with code analysis and insights
-            </p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-200">
-            <div className="w-12 h-12 rounded-lg bg-secondary/20 flex items-center justify-center mb-4 group-hover:bg-secondary/30 transition-colors">
-              <Github className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">GitHub Integration</h3>
-            <p className="text-sm text-muted-foreground">Real-time webhooks for PR, issues, and deployments</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-300">
-            <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center mb-4 group-hover:bg-accent/30 transition-colors">
-              <Users className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Discord Notifications</h3>
-            <p className="text-sm text-muted-foreground">Smart Discord bot with slash commands and rich embeds</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-100">
-            <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Gamification</h3>
-            <p className="text-sm text-muted-foreground">XP system, badges, and leaderboards for team engagement</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-200">
-            <div className="w-12 h-12 rounded-lg bg-secondary/20 flex items-center justify-center mb-4 group-hover:bg-secondary/30 transition-colors">
-              <Zap className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Workers & Jobs</h3>
-            <p className="text-sm text-muted-foreground">Background job queue with automatic retry and monitoring</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-300">
-            <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center mb-4 group-hover:bg-accent/30 transition-colors">
-              <Eye className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Admin Dashboard</h3>
-            <p className="text-sm text-muted-foreground">Real-time system monitoring and observability</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-100">
-            <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-              <Lock className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Enterprise Security</h3>
-            <p className="text-sm text-muted-foreground">Row-level security, OAuth integration, and audit logs</p>
-          </div>
-
-          <div className="glass p-8 rounded-xl card-hover group animate-in fade-in-0 duration-700 delay-200">
-            <div className="w-12 h-12 rounded-lg bg-secondary/20 flex items-center justify-center mb-4 group-hover:bg-secondary/30 transition-colors">
-              <Layers className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Modern Stack</h3>
-            <p className="text-sm text-muted-foreground">Next.js 16, PostgreSQL, and serverless architecture</p>
-          </div>
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-3 gap-6 pt-12">
+          {[
+            {
+              icon: Zap,
+              title: "AI PR Summaries",
+              description: "Google Gemini analyzes pull requests and generates intelligent summaries automatically",
+              color: "text-yellow-500",
+              gradient: "from-yellow-500/20 to-yellow-500/5"
+            },
+            {
+              icon: MessageSquare,
+              title: "Discord Integration",
+              description: "Real-time notifications with slash commands like /summary, /stats, and /create-issue",
+              color: "text-purple-500",
+              gradient: "from-purple-500/20 to-purple-500/5"
+            },
+            {
+              icon: BarChart3,
+              title: "Beautiful Analytics",
+              description: "Interactive dashboard with PR timeline, team stats, and gamification leaderboards",
+              color: "text-blue-500",
+              gradient: "from-blue-500/20 to-blue-500/5"
+            }
+          ].map((feature, index) => {
+            const Icon = feature.icon
+            return (
+              <Card
+                key={index}
+                className="glass border-primary/20 card-hover group relative overflow-hidden"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                <CardHeader className="relative">
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <Icon className={`h-6 w-6 ${feature.color}`} />
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardDescription>{feature.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            )
+          })}
         </div>
 
         {/* Tech Stack */}
-        <div className="glass p-12 rounded-2xl mt-20 animate-in fade-in-0 duration-700 delay-500">
-          <h2 className="text-2xl font-bold mb-8 text-center">Built with Modern Stack</h2>
-          <div className="grid md:grid-cols-5 gap-6 text-center">
-            <div>
-              <p className="font-semibold">Frontend</p>
-              <p className="text-sm text-muted-foreground mt-1">Next.js 16 + React 19</p>
-            </div>
-            <div>
-              <p className="font-semibold">Database</p>
-              <p className="text-sm text-muted-foreground mt-1">Supabase + PostgreSQL</p>
-            </div>
-            <div>
-              <p className="font-semibold">AI Engine</p>
-              <p className="text-sm text-muted-foreground mt-1">Google Gemini API</p>
-            </div>
-            <div>
-              <p className="font-semibold">Cache</p>
-              <p className="text-sm text-muted-foreground mt-1">Upstash Redis</p>
-            </div>
-            <div>
-              <p className="font-semibold">Integrations</p>
-              <p className="text-sm text-muted-foreground mt-1">GitHub + Discord</p>
-            </div>
-          </div>
+        <div className="pt-12">
+          <Card className="glass border-primary/20">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Powered by Modern Tech
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap justify-center gap-4">
+                {[
+                  { icon: "⚡", name: "Next.js 15" },
+                  { icon: "🤖", name: "Google Gemini" },
+                  { icon: "💬", name: "Discord.js" },
+                  { icon: "🐙", name: "GitHub API" },
+                  { icon: "🎨", name: "Tailwind CSS" },
+                  { icon: "📊", name: "Supabase" }
+                ].map((tech, i) => (
+                  <Badge key={i} variant="outline" className="px-4 py-2 text-sm">
+                    <span className="mr-2">{tech.icon}</span>
+                    {tech.name}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Quick Links */}
-        <div className="bg-primary/10 border border-primary/20 rounded-xl p-8 mt-20">
-          <h3 className="text-xl font-bold mb-4">Quick Start</h3>
-          <div className="space-y-3 text-sm">
-            <p>Explore Opscord demo pages:</p>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>
-                <Link href="/demo" className="text-primary hover:underline">
-                  /demo
-                </Link>
-                {" - "}Feature showcase with all components
-              </li>
-              <li>
-                <Link href="/demo/admin" className="text-primary hover:underline">
-                  /demo/admin
-                </Link>
-                {" - "}Live admin monitoring panel with real-time charts
-              </li>
-            </ul>
-          </div>
+        {/* Quick Start */}
+        <div className="pt-8">
+          <Card className="glass border-primary/20">
+            <CardHeader>
+              <CardTitle>Quick Start - 3 Simple Steps</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  { step: "1", title: "Connect GitHub", desc: "Link your repositories" },
+                  { step: "2", title: "Setup Discord", desc: "Add bot to your server" },
+                  { step: "3", title: "Enable AI", desc: "Activate PR summaries" }
+                ].map((item) => (
+                  <div key={item.step} className="flex gap-4 p-4 rounded-lg bg-white/5 dark:bg-black/20 hover:bg-white/10 dark:hover:bg-black/30 transition-all group cursor-pointer">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary text-white text-lg font-bold flex-shrink-0 group-hover:scale-110 transition-transform">
+                      {item.step}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">{item.title}</h4>
+                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border/40 mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © 2024 OpsCord. Built with ❤️ using Next.js & Google Gemini
+            </p>
+            <div className="flex gap-4">
+              <Link href="/demo" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Demo
+              </Link>
+              <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Login
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
