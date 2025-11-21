@@ -2,20 +2,18 @@
 
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
-import { DashboardOverview } from "@/components/dashboard/overview"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Zap, GitBranch, Users, TrendingUp } from "lucide-react"
+import { GitBranch, AlertCircle, CheckCircle2 } from "lucide-react"
+import useSWR from "swr"
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
+  const { data: repos } = useSWR(session ? "/api/repositories" : null, fetcher)
+  const { data: prs } = useSWR(session ? "/api/pull-requests" : null, fetcher)
 
   if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
 
   if (!session) {
@@ -23,70 +21,69 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Welcome section */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold gradient-text">Welcome back, {session.user?.name}!</h1>
-        <p className="text-muted-foreground">Monitor your GitHub repositories and Discord integrations in real-time</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold">Welcome back, {session.user?.name}!</h1>
+        <p className="text-muted-foreground mt-2">Monitor your repositories and integrations</p>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass border-primary/20 card-hover">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-primary" />
-              Repositories
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Connected repos</p>
-          </CardContent>
-        </Card>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Repositories</p>
+              <p className="text-3xl font-bold">{repos?.length || 0}</p>
+            </div>
+            <GitBranch className="h-8 w-8 text-blue-500 opacity-50" />
+          </div>
+        </div>
 
-        <Card className="glass border-primary/20 card-hover">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-secondary" />
-              Pull Requests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Open PRs</p>
+              <p className="text-3xl font-bold">{prs?.filter((p: any) => p.state === "open").length || 0}</p>
+            </div>
+            <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
+          </div>
+        </div>
 
-        <Card className="glass border-primary/20 card-hover">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-accent" />
-              Team Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Active users</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-primary/20 card-hover">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              Your XP
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Total points</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Integrations</p>
+              <p className="text-3xl font-bold">2</p>
+            </div>
+            <AlertCircle className="h-8 w-8 text-orange-500 opacity-50" />
+          </div>
+        </div>
       </div>
 
-      {/* Overview component */}
-      <DashboardOverview />
+      {/* Repositories List */}
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+        <h2 className="text-xl font-bold mb-4">Your Repositories</h2>
+        <div className="space-y-3">
+          {repos && repos.length > 0 ? (
+            repos.map((repo: any) => (
+              <div
+                key={repo.id}
+                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded"
+              >
+                <div>
+                  <p className="font-semibold">{repo.name}</p>
+                  <p className="text-sm text-muted-foreground">{repo.fullName}</p>
+                </div>
+                <a href={repo.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                  View
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-muted-foreground">No repositories connected yet.</p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

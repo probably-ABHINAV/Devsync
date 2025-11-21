@@ -4,32 +4,21 @@
  */
 
 interface Config {
-  supabase: {
-    url: string
-    anonKey: string
+  appUrl: string
+  geminiKey: string
+  github: {
+    clientId: string
+    clientSecret: string
   }
-  app: {
-    url: string
-  }
-  ai: {
-    apiKey: string
-    provider: string
-  }
-  jobQueue: {
-    secret: string
+  discord: {
+    clientId: string
+    clientSecret: string
+    token: string
   }
 }
 
 export function validateConfig(): Config {
   const errors: string[] = []
-
-  // Supabase
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    errors.push("NEXT_PUBLIC_SUPABASE_URL is required")
-  }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    errors.push("NEXT_PUBLIC_SUPABASE_ANON_KEY is required")
-  }
 
   // App URL
   if (!process.env.NEXT_PUBLIC_APP_URL) {
@@ -40,9 +29,23 @@ export function validateConfig(): Config {
     console.warn("⚠️  GEMINI_API_KEY not set - AI features will be disabled")
   }
 
-  // Job Queue
-  if (!process.env.JOB_QUEUE_SECRET) {
-    errors.push("JOB_QUEUE_SECRET is required")
+  // GitHub OAuth
+  if (!process.env.GITHUB_OAUTH_ID) {
+    errors.push("GITHUB_OAUTH_ID is required")
+  }
+  if (!process.env.GITHUB_OAUTH_SECRET) {
+    errors.push("GITHUB_OAUTH_SECRET is required")
+  }
+
+  // Discord OAuth
+  if (!process.env.DISCORD_OAUTH_ID) {
+    errors.push("DISCORD_OAUTH_ID is required")
+  }
+  if (!process.env.DISCORD_OAUTH_SECRET) {
+    errors.push("DISCORD_OAUTH_SECRET is required")
+  }
+  if (!process.env.DISCORD_TOKEN) {
+    errors.push("DISCORD_TOKEN is required")
   }
 
   if (errors.length > 0) {
@@ -52,19 +55,16 @@ export function validateConfig(): Config {
   }
 
   return {
-    supabase: {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL!,
+    geminiKey: process.env.GEMINI_API_KEY || "",
+    github: {
+      clientId: process.env.GITHUB_OAUTH_ID || "",
+      clientSecret: process.env.GITHUB_OAUTH_SECRET || "",
     },
-    app: {
-      url: process.env.NEXT_PUBLIC_APP_URL!,
-    },
-    ai: {
-      apiKey: process.env.GEMINI_API_KEY || "",
-      provider: "google-gemini",
-    },
-    jobQueue: {
-      secret: process.env.JOB_QUEUE_SECRET!,
+    discord: {
+      clientId: process.env.DISCORD_OAUTH_ID || "",
+      clientSecret: process.env.DISCORD_OAUTH_SECRET || "",
+      token: process.env.DISCORD_TOKEN!,
     },
   }
 }
@@ -80,18 +80,15 @@ if (typeof window === "undefined") {
 }
 
 export const config = {
-  supabase: {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  geminiKey: process.env.GEMINI_API_KEY || "",
+  github: {
+    clientId: process.env.GITHUB_OAUTH_ID || "",
+    clientSecret: process.env.GITHUB_OAUTH_SECRET || "",
   },
-  app: {
-    url: process.env.NEXT_PUBLIC_APP_URL || "",
-  },
-  ai: {
-    apiKey: process.env.GEMINI_API_KEY || "",
-    provider: "google-gemini",
-  },
-  jobQueue: {
-    secret: process.env.JOB_QUEUE_SECRET || "",
+  discord: {
+    clientId: process.env.DISCORD_OAUTH_ID || "",
+    clientSecret: process.env.DISCORD_OAUTH_SECRET || "",
+    token: process.env.DISCORD_TOKEN || "",
   },
 }

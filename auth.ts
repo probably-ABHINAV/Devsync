@@ -1,102 +1,73 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
 import Discord from "next-auth/providers/discord"
-import Google from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
-import type { NextAuthConfig } from "next-auth"
-import { prisma } from "@/lib/prisma"
+import { createClient } from "@/lib/supabase/server"
 
-const authConfig: NextAuthConfig = {
-  providers: [],
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  providers: [
+    GitHub({
+      clientId: process.env.GITHUB_OAUTH_ID,
+      clientSecret: process.env.GITHUB_OAUTH_SECRET,
+    }),
+    Discord({
+      clientId: process.env.DISCORD_OAUTH_ID,
+      clientSecret: process.env.DISCORD_OAUTH_SECRET,
+    }),
+  ],
   pages: {
     signIn: "/auth/login",
     signUp: "/auth/sign-up",
   },
   trustHost: true,
-}
-
-const providers = [
-  GitHub({
-    clientId: process.env.GITHUB_OAUTH_ID || "dummy-client-id",
-    clientSecret: process.env.GITHUB_OAUTH_SECRET || "dummy-secret",
-    allowDangerousEmailAccountLinking: true,
-  }),
-  Discord({
-    clientId: process.env.DISCORD_OAUTH_ID || "dummy-client-id",
-    clientSecret: process.env.DISCORD_OAUTH_SECRET || "dummy-secret",
-    allowDangerousEmailAccountLinking: true,
-  }),
-]
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  providers,
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.id = user.id
       }
       if (account) {
         token.provider = account.provider
+        token.accessToken = account.access_token
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.provider = token.provider as string
+        ;(session.user as any).provider = token.provider
+        ;(session as any).accessToken = token.accessToken
       }
       return session
     },
     async signIn({ user, account, profile }) {
-      if (typeof window !== "undefined") {
-        return true
-      }
-
       try {
-        let dbUser = await prisma.user.findUnique({
-          where: { email: user.email || "" },
-        })
+        const supabase = await createClient()
 
-        if (!dbUser) {
-          dbUser = await prisma.user.create({
-            data: {
-              email: user.email || "",
-              name: user.name || "",
-              image: user.image || "",
-              discordId: account?.provider === "discord" ? profile?.id : undefined,
-              githubId: account?.provider === "github" ? Number.parseInt(profile?.id || "0") : undefined,
-              profile: {
-                create: {
-                  username: user.name || "",
-                  displayName: user.name || "",
-                  avatarUrl: user.image || "",
-                },
-              },
-            },
-            include: { profile: true },
+        // Find or create user in Supabase
+        const { data: existingUser } = await supabase.from("users").select("id").eq("email", user.email).single()
+
+        if (!existingUser) {
+          // Create new user
+          const { error } = await supabase.from("users").insert({
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            provider: account?.provider,
+            external_id: profile?.id,
           })
-        } else {
-          if (account?.provider === "discord" && profile?.id) {
-            await prisma.user.update({
-              where: { id: dbUser.id },
-              data: { discordId: profile.id },
-            })
-          }
-          if (account?.provider === "github" && profile?.id) {
-            await prisma.user.update({
-              where: { id: dbUser.id },
-              data: { githubId: Number.parseInt(profile.id) },
-            })
+
+          if (error) {
+            console.error("Error creating user:", error)
+            return false
           }
         }
 
         return true
       } catch (error) {
-        console.error("SignIn error:", error)
+        console.error("SignIn callback error:", error)
         return false
       }
     },

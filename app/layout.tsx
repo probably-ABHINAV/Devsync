@@ -1,34 +1,26 @@
-
+import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "OpsCord - AI-Powered DevOps Platform",
-  description: "Connect GitHub and Discord with intelligent automation, AI summaries, and team analytics",
-  keywords: ["DevOps", "GitHub", "Discord", "AI", "Automation", "Gemini", "Pull Requests"],
-  authors: [{ name: "OpsCord Team" }],
-  icons: {
-    icon: "/icon.svg",
-  },
+  title: "OpsCord Lite - AI-Powered DevOps",
+  description: "Connect GitHub and Discord with AI-powered PR summaries and issue tracking",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+      <body className={`${inter.className} dark bg-slate-950 text-foreground`}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )
