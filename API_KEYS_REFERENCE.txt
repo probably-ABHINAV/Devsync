@@ -1,0 +1,217 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                   OpsCord - API Keys Quick Reference Card                      ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+📋 CHECKLIST: All Keys You Need
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REQUIRED (7 keys - Must have to launch):
+  □ NEXT_PUBLIC_SUPABASE_URL           from: supabase.com/project/settings
+  □ NEXT_PUBLIC_SUPABASE_ANON_KEY      from: supabase.com/project/settings
+  □ SUPABASE_SERVICE_ROLE_KEY          from: supabase.com/project/settings
+  □ GITHUB_CLIENT_ID                   from: github.com/settings/developers
+  □ GITHUB_CLIENT_SECRET               from: github.com/settings/developers
+  □ GITHUB_WEBHOOK_SECRET              generate: openssl rand -hex 32
+  □ NEXT_PUBLIC_APP_URL                set to: your domain (vercel/aws/docker)
+
+RECOMMENDED (1 key - For AI features):
+  □ GEMINI_API_KEY                     from: ai.google.dev
+
+OPTIONAL (3 keys - Discord bot):
+  □ DISCORD_CLIENT_ID                  from: discord.com/developers
+  □ DISCORD_TOKEN                      from: discord.com/developers
+  □ DISCORD_PUBLIC_KEY                 from: discord.com/developers
+
+FUTURE (2 keys - Phase 2.0 background jobs):
+  □ UPSTASH_REDIS_URL                  from: upstash.com
+  □ UPSTASH_REDIS_TOKEN                from: upstash.com
+
+
+🔗 WHERE TO GET EACH KEY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. SUPABASE (Database)
+   Website:  https://supabase.com
+   Steps:    Sign up → Create project → Settings > API → Copy keys
+   Time:     5 minutes
+   Cost:     Free (500MB database included)
+
+2. GITHUB (OAuth + Webhooks)
+   Website:  https://github.com/settings/developers
+   Steps:    OAuth Apps > New App → Fill form → Copy ID & Secret
+   Steps:    Generate webhook secret: openssl rand -hex 32
+   Time:     5 minutes
+   Cost:     Free
+
+3. GOOGLE GEMINI (AI Summaries)
+   Website:  https://ai.google.dev
+   Steps:    Get API Key → Copy key
+   Time:     3 minutes
+   Cost:     Free tier (60 req/min), $0.075/1M tokens for paid
+
+4. DISCORD (Bot Commands)
+   Website:  https://discord.com/developers/applications
+   Steps:    New Application → Bot → Copy token
+   Time:     5 minutes
+   Cost:     Free
+
+5. UPSTASH REDIS (Background Jobs - Future)
+   Website:  https://upstash.com
+   Steps:    Sign up → Create database → Copy URL & token
+   Time:     5 minutes
+   Cost:     Free tier (10K commands/day)
+
+
+⏱️  SETUP TIMELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Minimum to Launch:        15 minutes (Supabase + GitHub)
+Recommended Setup:        25 minutes (add Gemini)
+Full Setup:               35 minutes (add Discord)
+With Deployment:          45 minutes (Vercel)
+
+
+🚀 DEPLOYMENT OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERCEL (Recommended - Easiest)
+  Time:      10 minutes
+  Cost:      Free or $20/month Pro
+  URL:       yourepo → vercel.com → Import → Deploy
+  Docs:      See DEPLOYMENT.md
+
+AWS (More Control)
+  Time:      20 minutes
+  Cost:      $10-50/month
+  URL:       Lambda + RDS
+  Docs:      See DEPLOYMENT.md
+
+DOCKER (Self-Hosted)
+  Time:      30 minutes
+  Cost:      Your infrastructure
+  URL:       Any cloud provider
+  Docs:      See DEPLOYMENT.md
+
+
+📝 ENVIRONMENT VARIABLES (Copy-Paste Template)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Copy to .env.local (local dev) or Vercel/AWS env vars (production)
+
+NEXT_PUBLIC_SUPABASE_URL=https://[your-project].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your-anon-key]
+SUPABASE_SERVICE_ROLE_KEY=[your-service-role-key]
+
+GITHUB_CLIENT_ID=[your-client-id]
+GITHUB_CLIENT_SECRET=[your-client-secret]
+GITHUB_WEBHOOK_SECRET=[your-webhook-secret]
+
+NEXT_PUBLIC_APP_URL=https://yourdomain.com
+NODE_ENV=production
+
+GEMINI_API_KEY=[your-gemini-key]
+
+DISCORD_CLIENT_ID=[your-discord-client-id]
+DISCORD_TOKEN=[your-discord-token]
+DISCORD_PUBLIC_KEY=[your-discord-public-key]
+
+
+✅ VERIFICATION (Test Each Key Works)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After setting keys, test:
+
+1. SUPABASE:
+   curl -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+     https://[project].supabase.co/rest/v1/users?limit=1
+
+2. GITHUB:
+   Visit https://yourdomain.com/
+   Click "Login with GitHub"
+   Should authenticate successfully
+
+3. GEMINI:
+   curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$GEMINI_API_KEY
+
+4. DISCORD:
+   Add bot to server, try: /ping
+   Should respond: Pong!
+
+5. WEBHOOK:
+   Push commit to GitHub
+   Check Supabase: SELECT * FROM webhooks;
+
+
+🔒 SECURITY CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Never commit .env files to git
+✓ Never share API keys via email/chat
+✓ Use strong webhook secrets (32+ chars, random)
+✓ Rotate keys every 90 days
+✓ Store keys in password manager
+✓ Use different keys for dev/prod
+✓ Monitor API usage for anomalies
+✓ Enable 2FA on GitHub account
+
+
+📞 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem:                Solution:
+────────────────────────────────────────────────────────────────
+"Invalid API key"       Verify key copied completely (no spaces)
+"DB connection failed"  Check Supabase project not paused
+"Login loop"            Verify GitHub callback URL exact match
+"Webhook not received"  Check URL accessible, secret correct
+"AI not working"        Verify GEMINI_API_KEY set and enabled
+"Discord fails"         Check token valid and bot in server
+
+
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start Here:
+  → QUICK_START.md          (30-minute launch guide)
+  → API_KEYS_SETUP.md       (Detailed setup for each service)
+  → .env.example            (Environment variables template)
+
+Then:
+  → DEPLOYMENT.md           (Vercel, AWS, Docker options)
+  → PRODUCT_ROADMAP.md      (Future features v2.0-v4.0)
+  → README.md               (Product overview)
+
+
+🎯 QUICK START COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Generate webhook secret
+openssl rand -hex 32
+
+# Test Supabase connection
+curl -H "apikey: YOUR_ANON_KEY" \
+  https://YOUR_PROJECT.supabase.co/rest/v1/users?limit=1
+
+# Test GitHub OAuth (visit in browser)
+https://yourdomain.com/api/auth/callback?code=test
+
+# Local development
+npm run dev
+# Visit: http://localhost:5000
+
+# Production build & test
+npm run build
+npm start
+# Visit: https://yourdomain.com
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+You now have everything needed to deploy OpsCord independently!
+
+Total Setup Time: 15-45 minutes
+Total Cost: Free-$70/month (depending on usage & services)
+
+Start with QUICK_START.md for step-by-step guidance.
+
+═══════════════════════════════════════════════════════════════════════════════

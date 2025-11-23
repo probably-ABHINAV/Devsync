@@ -1,0 +1,87 @@
+🎯 All API Keys Required (13 Total)
+✅ REQUIRED (7 Keys - Must Have)
+1. NEXT_PUBLIC_SUPABASE_URL          → supabase.com
+2. NEXT_PUBLIC_SUPABASE_ANON_KEY     → supabase.com
+3. SUPABASE_SERVICE_ROLE_KEY         → supabase.com
+4. GITHUB_CLIENT_ID                  → github.com/settings/developers
+5. GITHUB_CLIENT_SECRET              → github.com/settings/developers
+6. GITHUB_WEBHOOK_SECRET             → Generate: openssl rand -hex 32
+7. NEXT_PUBLIC_APP_URL               → Your domain (Vercel/AWS/Docker)
+
+⭐ RECOMMENDED (1 Key - AI Features)
+8. GEMINI_API_KEY                    → ai.google.dev
+
+🔵 OPTIONAL (3 Keys - Discord Bot)
+9.  DISCORD_CLIENT_ID                → discord.com/developers
+10. DISCORD_TOKEN                    → discord.com/developers
+11. DISCORD_PUBLIC_KEY               → discord.com/developers
+
+📌 FUTURE (2 Keys - Phase 2.0 Background Jobs)
+12. UPSTASH_REDIS_URL                → upstash.com
+13. UPSTASH_REDIS_TOKEN              → upstash.com
+
+📚 Documentation Created (Choose Your Path)
+Document	Purpose	Read Time
+QUICK_START.md	⚡ Fast 15-30 min launch	5 min
+API_KEYS_SETUP.md	📖 Detailed setup for each service	15 min
+OPSCORD_KEYS_SUMMARY.md	📊 Complete reference with costs	10 min
+API_KEYS_REFERENCE.txt	🎫 Visual checklist card	3 min
+.env.example	💾 Copy-paste environment template	2 min
+⏱️ Time to Launch (Choose Your Option)
+Path	Time	Keys Needed
+Minimum (GitHub login only)	15 min	7 required
+Recommended (with AI)	25 min	7 + Gemini
+Full Features (with Discord)	35 min	7 + Gemini + Discord
+With Vercel Deploy	45 min	All above + deployment
+🚀 Deploy Independently (3 Options)
+Vercel (Easiest)
+5-10 minutes
+Free tier available
+Copy env vars → Deploy
+URL: opscord-xyz.vercel.app
+AWS (More Control)
+20-30 minutes
+$10-50/month
+Lambda + RDS
+URL: Your custom domain
+Docker (Flexible)
+30-45 minutes
+Your infrastructure
+Self-hosted anywhere
+URL: Your domain
+📋 Your Next Steps
+Read QUICK_START.md (5 min)
+
+Fastest path to launch
+Step-by-step instructions
+Get 7 Required Keys (20 min)
+
+Supabase (5 min)
+GitHub (5 min)
+Database setup (10 min)
+Deploy (10 min)
+
+Vercel recommended (easiest)
+Or AWS/Docker (more control)
+Configure Webhooks (5 min)
+
+GitHub webhook
+Discord webhook (optional)
+Launch! 🎉
+
+Share your URL
+Invite team members
+💰 Cost Summary
+Minimum: FREE (free tier of all services)
+Recommended: $25-50/month (Supabase Pro + Vercel Pro)
+Enterprise: $100+/month (higher limits + custom domains)
+
+📁 Files Created for You
+✅ API_KEYS_SETUP.md - Complete setup guide
+✅ QUICK_START.md - Fast launch guide
+✅ OPSCORD_KEYS_SUMMARY.md - Reference with all keys
+✅ API_KEYS_REFERENCE.txt - Visual checklist
+✅ .env.example - Template to copy-paste
+👉 Start with: QUICK_START.md
+
+Your OpsCord app is now fully documented for independent deployment and completely free from Replit dependencies. You can deploy to any platform (Vercel, AWS, Docker, etc.) with these clear instructions! 🚀
