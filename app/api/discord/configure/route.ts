@@ -11,11 +11,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (!validateDiscordWebhook(webhookUrl)) {
-      return Response.json({ error: "Invalid Discord webhook URL" }, { status: 400 })
+      return Response.json({ error: "Invalid Discord webhook URL format. Expected: https://discord.com/api/webhooks/..." }, { status: 400 })
     }
 
     // Test the webhook
-    await sendDiscordMessage(webhookUrl, "GitHub Discord integration connected! 🎉")
+    try {
+      await sendDiscordMessage(webhookUrl, "GitHub Discord integration connected! 🎉")
+    } catch (error) {
+      return Response.json({ error: "Webhook test failed. Please verify the URL is correct." }, { status: 400 })
+    }
 
     // Store the webhook URL in cookies
     const cookieStore = await cookies()

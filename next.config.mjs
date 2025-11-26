@@ -6,9 +6,12 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Allow all origins for Replit development AND Vercel production
   allowedDevOrigins: [
     '*.replit.dev',
     '*.repl.co',
+    '*.pike.replit.dev',
+    '*.vercel.app',
     'localhost:5000',
     '127.0.0.1:5000'
   ],
@@ -17,6 +20,8 @@ const nextConfig = {
       allowedOrigins: [
         '*.replit.dev',
         '*.repl.co',
+        '*.pike.replit.dev',
+        '*.vercel.app',
         'localhost:5000'
       ]
     }

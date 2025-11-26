@@ -23,8 +23,12 @@ export async function sendDiscordMessage(webhookUrl: string, message: string, ti
 
 export function validateDiscordWebhook(url: string): boolean {
   try {
-    new URL(url)
-    return url.includes("discord.com/api/webhooks/")
+    const urlObj = new URL(url)
+    // Accept both discord.com and discordapp.com domains
+    return (
+      (urlObj.hostname.includes("discord.com") || urlObj.hostname.includes("discordapp.com")) &&
+      urlObj.pathname.includes("/api/webhooks/")
+    )
   } catch {
     return false
   }
