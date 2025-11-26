@@ -90,7 +90,7 @@ export default function Dashboard({ user }: DashboardProps) {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.6, ease: "easeInOut" },
     },
   }
 
@@ -110,14 +110,9 @@ export default function Dashboard({ user }: DashboardProps) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-lg blur opacity-75" />
-              <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Gauge className="w-5 h-5 text-white" />
-              </div>
-            </div>
+            <img src="/opscord-logo.jpg" alt="Opscord" className="w-10 h-10 rounded-lg object-cover" />
             <div className="flex flex-col">
-              <span className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <span className="font-bold text-lg text-foreground">
                 Opscord
               </span>
               <p className="text-xs text-muted-foreground">GitHub × Discord</p>

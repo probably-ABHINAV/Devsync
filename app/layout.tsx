@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/placeholder-logo.png",
+        url: "/opscord-logo.jpg",
         width: 1200,
         height: 630,
         alt: "Opscord - GitHub to Discord Integration",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Opscord - Real-Time GitHub Notifications for Discord",
     description: "Monitor GitHub repos, issues & PRs directly in Discord. Instant notifications, enterprise security.",
-    images: ["/placeholder-logo.png"],
+    images: ["/opscord-logo.jpg"],
   },
   robots: {
     index: true,

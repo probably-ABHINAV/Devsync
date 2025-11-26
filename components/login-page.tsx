@@ -59,12 +59,7 @@ export default function LoginPage() {
             {/* Header */}
             <motion.div variants={itemVariants} className="space-y-4 text-center">
               <div className="flex justify-center mb-2">
-                <div className="relative w-14 h-14">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary rounded-xl blur opacity-75 animate-pulse-glow" />
-                  <div className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Gauge className="w-7 h-7 text-white" />
-                  </div>
-                </div>
+                <img src="/opscord-logo.jpg" alt="Opscord" className="w-16 h-16 rounded-xl object-cover shadow-lg" />
               </div>
               <h1 className="text-3xl font-bold text-foreground">Welcome to Opscord</h1>
               <p className="text-muted-foreground text-sm">Monitor GitHub. Sync to Discord. Instantly.</p>

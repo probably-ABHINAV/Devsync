@@ -106,13 +106,8 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary rounded-xl blur opacity-75" />
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Gauge className="w-5 h-5 text-white" />
-              </div>
-            </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <img src="/opscord-logo.jpg" alt="Opscord" className="w-10 h-10 rounded-lg object-cover" />
+            <span className="font-bold text-xl text-foreground">
               Opscord
             </span>
           </motion.div>
