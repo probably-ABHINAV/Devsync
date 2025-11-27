@@ -155,7 +155,38 @@ NEXT_PUBLIC_APP_URL=http://localhost:5000
    - Select Permissions: Send Messages, Manage Messages, Use Slash Commands, Embed Links
    - Copy generated URL and authorize bot to your server
 
-### Step 5: Add Google Gemini API Key (Optional - 2 min)
+### Step 5: Add GitHub Webhook (5 min)
+
+1. Go to your GitHub repository
+2. Settings > Webhooks > Add webhook
+3. Fill in the webhook configuration:
+   - **Payload URL**: `https://yourdomain.com/api/github/webhook` (or your Vercel/Replit URL)
+   - **Content type**: `application/json`
+   - **Events**: Select "Let me select individual events" and enable:
+     - ✅ Push
+     - ✅ Pull requests
+     - ✅ Issues
+     - ✅ Releases
+     - ✅ Pull request review comments
+4. **Paste your webhook secret** in the "Secret" field:
+   ```bash
+   # Use the same secret from Step 3
+   GITHUB_WEBHOOK_SECRET=your_secret_from_step_3
+   ```
+5. Click "Add webhook"
+6. You should see a green checkmark confirming the webhook was added
+
+**Test the Webhook:**
+```bash
+# Make a commit and push to your repo
+git commit -m "Test webhook"
+git push origin main
+
+# Check Supabase to verify the webhook was received:
+# Dashboard → SQL Editor → SELECT * FROM webhooks ORDER BY created_at DESC LIMIT 1;
+```
+
+### Step 6: Add Google Gemini API Key (Optional - 2 min)
 
 1. Go to https://ai.google.dev/
 2. Click "Get API key"
