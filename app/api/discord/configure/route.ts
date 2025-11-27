@@ -1,4 +1,5 @@
 import { validateDiscordWebhook, sendDiscordMessage } from "@/lib/discord"
+import { getServiceSupabase } from "@/lib/supabase"
 import { cookies } from "next/headers"
 import type { NextRequest } from "next/server"
 
@@ -12,6 +13,40 @@ export async function POST(request: NextRequest) {
 
     if (!validateDiscordWebhook(webhookUrl)) {
       return Response.json({ error: "Invalid Discord webhook URL format. Expected: https://discord.com/api/webhooks/..." }, { status: 400 })
+    }
+
+    // Get current user
+    const cookieStore = await cookies()
+    const token = cookieStore.get("github_token")?.value
+
+    if (!token) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Get GitHub user data
+    const userResponse = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    })
+
+    if (!userResponse.ok) {
+      return Response.json({ error: "Failed to verify GitHub token" }, { status: 401 })
+    }
+
+    const userData = await userResponse.json()
+    const supabase = getServiceSupabase()
+
+    // Get user from database
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('github_id', userData.id.toString())
+      .single()
+
+    if (!user) {
+      return Response.json({ error: "User not found" }, { status: 404 })
     }
 
     // Default event types if none provided
@@ -41,21 +76,22 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Webhook test failed. Please verify the URL is correct." }, { status: 400 })
     }
 
-    // Store the webhook URL and event types in cookies
-    const cookieStore = await cookies()
-    cookieStore.set("discord_webhook", webhookUrl, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365,
-    })
-    
-    cookieStore.set("discord_event_types", JSON.stringify(enabledEvents), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365,
-    })
+    // Store the webhook URL and event types in database
+    const { error: upsertError } = await supabase
+      .from('discord_configs')
+      .upsert({
+        user_id: user.id,
+        webhook_url: webhookUrl,
+        event_types: enabledEvents,
+        enabled: true,
+      }, {
+        onConflict: 'user_id'
+      })
+
+    if (upsertError) {
+      console.error("Discord config upsert error:", upsertError)
+      return Response.json({ error: "Failed to save Discord configuration" }, { status: 500 })
+    }
 
     return Response.json({ success: true, eventTypes: enabledEvents })
   } catch (error) {
