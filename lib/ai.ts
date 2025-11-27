@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const apiKey = process.env.GEMINI_API_KEY || ''
-
-if (!apiKey) {
-  console.warn('GEMINI_API_KEY not set - AI features will be disabled')
+function getGenAI() {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    return null
+  }
+  return new GoogleGenerativeAI(apiKey)
 }
-
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
 
 export interface PRSummary {
   summary: string
@@ -22,8 +22,9 @@ export async function summarizePR(
   diff: string,
   filesChanged: number
 ): Promise<PRSummary> {
+  const genAI = getGenAI()
   if (!genAI) {
-    throw new Error('Gemini API not configured')
+    throw new Error('Gemini API not configured - please add GEMINI_API_KEY')
   }
 
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
@@ -80,8 +81,9 @@ export async function generateIssueFromDiscord(description: string): Promise<{
   body: string
   labels: string[]
 }> {
+  const genAI = getGenAI()
   if (!genAI) {
-    throw new Error('Gemini API not configured')
+    throw new Error('Gemini API not configured - please add GEMINI_API_KEY')
   }
 
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })

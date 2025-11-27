@@ -8,8 +8,18 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code")
   const error = searchParams.get("error")
 
+  // Get the base URL from environment or request headers
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL
+
+  if (!baseUrl) {
+    // Auto-detect from request headers (for production)
+    const host = request.headers.get("host") || "localhost:5000"
+    const proto = request.headers.get("x-forwarded-proto") || "http"
+    baseUrl = `${proto}://${host}`
+  }
+
   if (error) {
-    return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/`)
+    return Response.redirect(`${baseUrl}/`)
   }
 
   if (!code) {
@@ -19,13 +29,13 @@ export async function GET(request: NextRequest) {
   try {
     const clientId = process.env.GITHUB_CLIENT_ID
     const clientSecret = process.env.GITHUB_CLIENT_SECRET
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:5000"}/api/auth/callback`
+    const redirectUri = `${baseUrl}/api/auth/callback`
 
     if (!clientId || !clientSecret) {
       return Response.json({ error: "GitHub credentials not configured" }, { status: 500 })
     }
 
-    const token = await exchangeCodeForToken(code, clientId, clientSecret)
+    const token = await exchangeCodeForToken(code, clientId, clientSecret, redirectUri)
     const userData = await getUserData(token)
 
     // Upsert user to Supabase (create new or update existing placeholder)
@@ -56,7 +66,7 @@ export async function GET(request: NextRequest) {
     // Sync GitHub activities to database
     if (userRecord?.id) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:5000"}/api/sync-activities`, {
+        await fetch(`${baseUrl}/api/sync-activities`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -76,19 +86,12 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 365, // 1 year
     })
 
-    cookieStore.set("github_user", JSON.stringify(userData), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30,
-    })
-
-    return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:5000"}/`)
+    return Response.redirect(`${baseUrl}/dashboard`)
   } catch (error) {
-    console.error("OAuth callback error:", error)
-    return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/`)
+    console.error("GitHub auth error:", error)
+    return Response.redirect(`${baseUrl}/?error=auth_failed`)
   }
 }

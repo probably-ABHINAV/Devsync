@@ -158,23 +158,24 @@ export async function assignGitHubIssue(
 export async function getNotificationSettings(guildId: string, repoName?: string) {
   const supabase = getServiceSupabase()
 
-  let query = supabase
-    .from('discord_notification_channels')
-    .select('*')
-    .eq('guild_id', guildId)
+  try {
+    let query = supabase
+      .from('discord_notification_channels')
+      .select('*')
+      .eq('channel_id', guildId)
 
-  if (repoName) {
-    query = query.eq('repo_name', repoName)
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Failed to fetch notification settings:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Notification settings error:', error)
+    return []
   }
-
-  const { data, error } = await query
-
-  if (error) {
-    console.error('Failed to fetch notification settings:', error)
-    throw new Error('Failed to fetch notification settings')
-  }
-
-  return data || []
 }
 
 export async function updateNotificationSetting(
@@ -186,30 +187,36 @@ export async function updateNotificationSetting(
 ): Promise<{ success: boolean; message: string }> {
   const supabase = getServiceSupabase()
 
-  const updateData: Record<string, any> = {
-    guild_id: guildId,
-    channel_id: channelId,
-    event_type: eventType,
-    enabled,
-    updated_at: new Date().toISOString(),
+  try {
+    const notificationTypes = eventType === 'all' 
+      ? ['pr_opened', 'pr_merged', 'issue_created', 'ci_failure', 'releases']
+      : [eventType]
+
+    const updateData: Record<string, any> = {
+      channel_id: channelId,
+      channel_name: `discord-${channelId}`,
+      webhook_url: `https://discord.com/api/webhooks/${channelId}`,
+      notification_types: notificationTypes,
+      is_active: enabled,
+      updated_at: new Date().toISOString(),
+    }
+
+    const { error } = await supabase
+      .from('discord_notification_channels')
+      .upsert(updateData, {
+        onConflict: 'channel_id',
+      })
+
+    if (error) {
+      console.error('Failed to update notification setting:', error)
+      return { success: false, message: `Failed to update: ${error.message}` }
+    }
+
+    return { success: true, message: `Notification ${enabled ? 'enabled' : 'disabled'} for ${eventType}` }
+  } catch (error) {
+    console.error('Notification update error:', error)
+    return { success: false, message: `Database error - make sure Phase 2 tables are created` }
   }
-
-  if (repoName) {
-    updateData.repo_name = repoName
-  }
-
-  const { error } = await supabase
-    .from('discord_notification_channels')
-    .upsert(updateData, {
-      onConflict: repoName ? 'guild_id,channel_id,event_type,repo_name' : 'guild_id,channel_id,event_type',
-    })
-
-  if (error) {
-    console.error('Failed to update notification setting:', error)
-    return { success: false, message: `Failed to update: ${error.message}` }
-  }
-
-  return { success: true, message: `Notification ${enabled ? 'enabled' : 'disabled'} for ${eventType}` }
 }
 
 export function formatRepoStatus(ciRuns: CIRun[]): {

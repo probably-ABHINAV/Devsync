@@ -9,6 +9,7 @@ export const DISCORD_COLORS: Record<string, number> = {
   PRIMARY: 0x7289DA,    // Discord blurple
   CRITICAL: 0xFF1744,   // Bright red for critical alerts
   NEUTRAL: 0x90A4AE,    // Gray for neutral info
+  DEFAULT: 0x00D9FF,    // Cyan - default Opscord color
 }
 
 export interface DiscordEmbedField {
@@ -40,9 +41,14 @@ export interface RichDiscordEmbed {
   thumbnail?: { url: string }
 }
 
+export interface DiscordPayload {
+  content?: string
+  embeds?: RichDiscordEmbed[]
+}
+
 export async function sendDiscordMessage(
   webhookUrl: string, 
-  message: string, 
+  messageOrPayload: string | DiscordPayload, 
   title?: string,
   options?: {
     color?: number
@@ -53,21 +59,27 @@ export async function sendDiscordMessage(
     thumbnail?: string
   }
 ) {
-  const embed: RichDiscordEmbed = {
-    title: title || "GitHub Update",
-    description: message,
-    color: options?.color ?? DISCORD_COLORS.DEFAULT,
-    timestamp: new Date().toISOString(),
-  }
+  let payload: DiscordPayload
 
-  if (options?.url) embed.url = options.url
-  if (options?.author) embed.author = options.author
-  if (options?.footer) embed.footer = options.footer
-  if (options?.fields) embed.fields = options.fields
-  if (options?.thumbnail) embed.thumbnail = { url: options.thumbnail }
+  // Handle direct payload object (for rich embeds)
+  if (typeof messageOrPayload === 'object' && 'embeds' in messageOrPayload) {
+    payload = messageOrPayload
+  } else {
+    // Build embed from message string and options
+    const embed: RichDiscordEmbed = {
+      title: title || "GitHub Update",
+      description: messageOrPayload as string,
+      color: options?.color ?? DISCORD_COLORS.DEFAULT,
+      timestamp: new Date().toISOString(),
+    }
 
-  const payload = {
-    embeds: [embed],
+    if (options?.url) embed.url = options.url
+    if (options?.author) embed.author = options.author
+    if (options?.footer) embed.footer = options.footer
+    if (options?.fields) embed.fields = options.fields
+    if (options?.thumbnail) embed.thumbnail = { url: options.thumbnail }
+
+    payload = { embeds: [embed] }
   }
 
   const response = await fetch(webhookUrl, {
@@ -112,4 +124,45 @@ export function formatDuration(startTime: string, endTime: string): string {
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.substring(0, maxLength - 3) + '...'
+}
+
+// Event type to emoji mapping
+export const EVENT_EMOJIS: Record<string, string> = {
+  push: "🚀",
+  pull_request: "🔀",
+  issues: "📝",
+  release: "🎉",
+  review: "👀",
+  ci: "⚙️",
+  fork: "🍴",
+  star: "⭐",
+  watch: "👁️",
+}
+
+// Create a formatted event notification embed
+export function createEventEmbed(
+  eventType: string,
+  title: string,
+  description: string,
+  fields: DiscordEmbedField[],
+  options?: {
+    url?: string
+    author?: DiscordEmbedAuthor
+    color?: number
+  }
+): RichDiscordEmbed {
+  const emoji = EVENT_EMOJIS[eventType] || "📌"
+  
+  return {
+    title: `${emoji} ${title}`,
+    description,
+    color: options?.color || DISCORD_COLORS.DEFAULT,
+    timestamp: new Date().toISOString(),
+    url: options?.url,
+    author: options?.author,
+    fields,
+    footer: {
+      text: "Opscord • GitHub × Discord Integration"
+    }
+  }
 }
