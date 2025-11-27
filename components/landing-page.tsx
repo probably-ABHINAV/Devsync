@@ -1,8 +1,10 @@
 "use client"
 import { motion } from "framer-motion"
-import { Zap, Shield, Rocket, ArrowRight, Gauge, Check, Lock, Github, MessageCircle, Users } from "lucide-react"
+import { Zap, Shield, Rocket, ArrowRight, Gauge, Check, Lock, Github, MessageCircle, Users, X, CheckCircle2, Circle } from "lucide-react"
+import { useState } from "react"
 
 export default function LandingPage() {
+  const [selectedPhase, setSelectedPhase] = useState<string | null>(null)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -20,6 +22,86 @@ export default function LandingPage() {
       opacity: 1,
       y: 0,
       transition: { duration: 0.8 },
+    },
+  }
+
+  const roadmapData = {
+    "v1.0": {
+      version: "v1.0",
+      status: "complete",
+      timeline: "November 2025",
+      description: "Core integrations and gamification",
+      features: [
+        { name: "GitHub OAuth + repository integration", completed: true },
+        { name: "Discord webhook notifications", completed: true },
+        { name: "AI PR summarization (Gemini)", completed: true },
+        { name: "Gamification (XP, badges, leaderboards)", completed: true },
+        { name: "Real-time activity feed", completed: true },
+        { name: "Analytics dashboard", completed: true },
+      ],
+    },
+    "v1.1": {
+      version: "v1.1",
+      status: "planned",
+      timeline: "December 2025",
+      effort: "2 weeks",
+      description: "Enhanced stability and performance",
+      features: [
+        { name: "Performance optimization", completed: false },
+        { name: "Database query optimization", completed: false },
+        { name: "Error handling improvements", completed: false },
+        { name: "Security audit and fixes", completed: false },
+        { name: "Webhook retry logic", completed: false },
+      ],
+    },
+    "v2.0": {
+      version: "v2.0",
+      status: "planned",
+      timeline: "Q1 2026",
+      effort: "8 weeks",
+      description: "Advanced AI & background jobs",
+      features: [
+        { name: "Issue auto-classification", completed: false },
+        { name: "Release notes generator", completed: false },
+        { name: "CI failure RCA", completed: false },
+        { name: "BullMQ job queue", completed: false },
+        { name: "Admin dashboard", completed: false },
+        { name: "Extended analytics", completed: false },
+        { name: "Enhanced Discord commands", completed: false },
+        { name: "RBAC & multi-tenancy", completed: false },
+      ],
+    },
+    "v3.0": {
+      version: "v3.0",
+      status: "planned",
+      timeline: "Q2-Q3 2026",
+      effort: "12 weeks",
+      description: "ML & advanced automation",
+      features: [
+        { name: "Automated code review", completed: false },
+        { name: "Auto-approval system", completed: false },
+        { name: "Failure prediction model", completed: false },
+        { name: "Anomaly detection", completed: false },
+        { name: "Conversational DevOps bot", completed: false },
+        { name: "GitLab support", completed: false },
+        { name: "Slack integration", completed: false },
+      ],
+    },
+    "v4.0": {
+      version: "v4.0",
+      status: "planned",
+      timeline: "Q4 2026",
+      effort: "16 weeks",
+      description: "SaaS platform & marketplace",
+      features: [
+        { name: "Multi-tenant architecture", completed: false },
+        { name: "Subscription plans & Stripe", completed: false },
+        { name: "Multi-cloud support", completed: false },
+        { name: "Kubernetes integration", completed: false },
+        { name: "Public REST API", completed: false },
+        { name: "GraphQL API", completed: false },
+        { name: "Plugin marketplace", completed: false },
+      ],
     },
   }
 
@@ -115,7 +197,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            onClick={() => window.location.href = "/api/auth/github"}
+            onClick={() => window.open("/api/auth/github", "_blank")}
             className="px-6 py-2.5 sm:px-8 sm:py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-white font-semibold text-sm sm:text-base hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             Get Started Free
@@ -172,7 +254,7 @@ export default function LandingPage() {
           {/* Primary CTA Buttons */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center pt-4 sm:pt-6 px-4">
             <button 
-              onClick={() => window.location.href = "/api/auth/github"}
+              onClick={() => window.open("/api/auth/github", "_blank")}
               className="group relative px-8 py-4 sm:py-4 rounded-lg overflow-hidden font-semibold text-base sm:text-lg transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-95 cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-100" />
@@ -311,6 +393,120 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Product Roadmap Section */}
+      <motion.div
+        className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={containerVariants}
+      >
+        <motion.div className="text-center mb-12 sm:mb-16" variants={itemVariants}>
+          <div className="inline-flex items-center gap-2 mb-4">
+            <Rocket className="w-5 h-5 text-accent" />
+            <span className="text-sm font-medium text-accent">Our Vision</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">Product Roadmap</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+            From MVP to enterprise SaaS platform • Evolution through 2026
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-5 gap-3 sm:gap-4 mb-8">
+          {[
+            { version: "v1.0", status: "✓ Live", color: "border-green-500/50 bg-green-500/10 hover:bg-green-500/20", desc: "MVP • GitHub • Discord" },
+            { version: "v1.1", status: "Dec 2025", color: "border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20", desc: "Stability" },
+            { version: "v2.0", status: "Q1 2026", color: "border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20", desc: "Enterprise AI" },
+            { version: "v3.0", status: "Q2-Q3 2026", color: "border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20", desc: "ML & Automation" },
+            { version: "v4.0", status: "Q4 2026", color: "border-indigo-500/50 bg-indigo-500/10 hover:bg-indigo-500/20", desc: "SaaS Platform" },
+          ].map((phase, idx) => (
+            <motion.div
+              key={idx}
+              variants={itemVariants}
+              onClick={() => setSelectedPhase(phase.version)}
+              className={`p-4 sm:p-6 rounded-lg border ${phase.color} text-center cursor-pointer transition-all duration-300 hover:shadow-lg transform hover:scale-105`}
+            >
+              <p className="font-bold text-lg text-foreground">{phase.version}</p>
+              <p className="text-xs sm:text-sm text-accent font-semibold mt-1">{phase.status}</p>
+              <p className="text-xs text-muted-foreground mt-2">{phase.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {selectedPhase && roadmapData[selectedPhase as keyof typeof roadmapData] && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 sm:p-8 rounded-xl border border-accent/30 bg-gradient-to-br from-accent/10 via-background/50 to-primary/5"
+          >
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                  {roadmapData[selectedPhase as keyof typeof roadmapData].version}
+                </h3>
+                <p className="text-muted-foreground">{roadmapData[selectedPhase as keyof typeof roadmapData].description}</p>
+              </div>
+              <button
+                onClick={() => setSelectedPhase(null)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">📅 Timeline:</span>
+                <span className="font-semibold text-foreground">{roadmapData[selectedPhase as keyof typeof roadmapData].timeline}</span>
+              </div>
+              {roadmapData[selectedPhase as keyof typeof roadmapData].effort && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">⏱️ Effort:</span>
+                  <span className="font-semibold text-foreground">{roadmapData[selectedPhase as keyof typeof roadmapData].effort}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">Features:</h4>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {roadmapData[selectedPhase as keyof typeof roadmapData].features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-2 p-2 rounded hover:bg-accent/5 transition-colors">
+                    {feature.completed ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    )}
+                    <span className={`text-sm ${feature.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                      {feature.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <motion.div variants={itemVariants} className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-xl border border-accent/30 p-6 sm:p-8 text-center">
+          <div className="space-y-4">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground">2026 Goals</h3>
+            <div className="grid sm:grid-cols-4 gap-4">
+              {[
+                { icon: "👥", label: "1,000+ Teams" },
+                { icon: "💰", label: "100+ Customers" },
+                { icon: "⚡", label: "99.9% Uptime" },
+                { icon: "⭐", label: "4.5+ Rating" },
+              ].map((goal, idx) => (
+                <div key={idx}>
+                  <p className="text-2xl mb-1">{goal.icon}</p>
+                  <p className="text-sm font-semibold text-foreground">{goal.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* Final CTA Section */}

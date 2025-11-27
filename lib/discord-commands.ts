@@ -82,6 +82,214 @@ export const DISCORD_COMMANDS = [
       },
     ],
   },
+  {
+    name: 'assign',
+    description: 'Auto-assign GitHub issues to team members',
+    type: 1,
+    options: [
+      {
+        name: 'issue',
+        description: 'Issue number (e.g., 123)',
+        type: 4,
+        required: true,
+      },
+      {
+        name: 'member',
+        description: 'GitHub username to assign',
+        type: 3,
+        required: true,
+      },
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'repo-status',
+    description: 'Show latest CI/CD status and recent activity',
+    type: 1,
+    options: [
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+      {
+        name: 'limit',
+        description: 'Number of CI runs to show (default: 5)',
+        type: 4,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'setup-notifications',
+    description: 'Configure notification channels and event types',
+    type: 1,
+    options: [
+      {
+        name: 'action',
+        description: 'Action to perform',
+        type: 3,
+        required: true,
+        choices: [
+          { name: 'Enable notifications', value: 'enable' },
+          { name: 'Disable notifications', value: 'disable' },
+          { name: 'List current settings', value: 'list' },
+        ],
+      },
+      {
+        name: 'event_type',
+        description: 'Event type to configure',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Pull Requests', value: 'pull_request' },
+          { name: 'Issues', value: 'issues' },
+          { name: 'CI/CD Runs', value: 'ci_runs' },
+          { name: 'Releases', value: 'releases' },
+          { name: 'All Events', value: 'all' },
+        ],
+      },
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'ai-review',
+    description: 'Get AI-powered code review suggestions for a PR',
+    type: 1,
+    options: [
+      {
+        name: 'pr',
+        description: 'PR number (e.g., 123)',
+        type: 4,
+        required: true,
+      },
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+      {
+        name: 'focus',
+        description: 'Focus area for review',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Security', value: 'security' },
+          { name: 'Performance', value: 'performance' },
+          { name: 'Code Quality', value: 'quality' },
+          { name: 'All Areas', value: 'all' },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'team-stats',
+    description: 'Show detailed team statistics and leaderboard',
+    type: 1,
+    options: [
+      {
+        name: 'period',
+        description: 'Time period for stats',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Daily', value: 'daily' },
+          { name: 'Weekly', value: 'weekly' },
+          { name: 'Monthly', value: 'monthly' },
+        ],
+      },
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+      {
+        name: 'metric',
+        description: 'Specific metric to focus on',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'PRs', value: 'prs' },
+          { name: 'Reviews', value: 'reviews' },
+          { name: 'Issues', value: 'issues' },
+          { name: 'All Metrics', value: 'all' },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'health-check',
+    description: 'Check system health and status',
+    type: 1,
+  },
+  {
+    name: 'alert-config',
+    description: 'Configure alert preferences and thresholds',
+    type: 1,
+    options: [
+      {
+        name: 'threshold',
+        description: 'Alert threshold type',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Critical', value: 'critical' },
+          { name: 'High', value: 'high' },
+          { name: 'Medium', value: 'medium' },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'recent-activity',
+    description: 'Show recent activity across all repositories',
+    type: 1,
+    options: [
+      {
+        name: 'limit',
+        description: 'Number of activities to show (max 20)',
+        type: 4,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'pr-insights',
+    description: 'Get insights about pull request metrics and trends',
+    type: 1,
+    options: [
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+      {
+        name: 'period',
+        description: 'Time period to analyze',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Last 7 days', value: '7d' },
+          { name: 'Last 30 days', value: '30d' },
+          { name: 'Last 90 days', value: '90d' },
+        ],
+      },
+    ],
+  },
 ]
 
 export async function registerDiscordCommands() {
