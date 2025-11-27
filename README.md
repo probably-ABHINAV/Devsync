@@ -34,36 +34,11 @@ Perfect for **engineering teams** who want to:
 
 ---
 
-## 📅 Roadmap (Future Releases)
-
-### 🔜 Phase 2 (v2.0 - Q1 2026)
-- **Advanced AI Engine**: Issue classification, release notes generation, CI failure analysis
-- **Background Jobs**: Upstash Redis + BullMQ for async processing
-- **Admin Dashboard**: System health, webhook logs, repository monitoring
-- **Extended Analytics**: PR metrics, team trends, performance reports
-- **Enhanced Discord**: More commands, better integration
-
-### 🚀 Phase 3 (v3.0 - Q2 2026)
-- **Automated Code Review**: AI-powered PR approval/denial
-- **Predictive Analytics**: ML-based failure prediction
-- **Conversational Agent**: ChatGPT-based DevOps assistant
-- **Extended Integrations**: GitLab, Bitbucket, Slack support
-
-### 🌟 Phase 4 (v4.0 - Q4 2026)
-- **SaaS Infrastructure**: Multi-tenant, subscription plans
-- **Multi-Cloud**: AWS, GCP, Azure support
-- **Kubernetes Integration**: Deployment automation
-- **Plugin Marketplace**: Community extensions
-
-See `PRODUCT_ROADMAP.md` for detailed breakdown.
-
----
-
 ## 🛠️ Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
-| Frontend | Next.js 15, React 19, TypeScript |
+| Frontend | Next.js 16, React 19, TypeScript |
 | Styling | Tailwind CSS 4.x, Framer Motion |
 | Backend | Node.js, Next.js API routes |
 | Database | Supabase (PostgreSQL) |
@@ -73,7 +48,7 @@ See `PRODUCT_ROADMAP.md` for detailed breakdown.
 
 ---
 
-## 📦 Quick Start
+## 📦 Quick Start (15 minutes)
 
 ### Prerequisites
 - Node.js 18+
@@ -82,32 +57,25 @@ See `PRODUCT_ROADMAP.md` for detailed breakdown.
 - Discord account (optional, for notifications)
 - Google API key (optional, for AI)
 
-### Installation
+### Local Development Setup
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/opscord.git
+git clone https://github.com/probably-ABHINAV/opscord.git
 cd opscord
 
 # 2. Install dependencies
 npm install --legacy-peer-deps
 
-# 3. Set up Supabase
-# - Create project at supabase.com
-# - Run supabase-schema.sql in SQL editor
-# - Copy API keys to .env.local
-
-# 4. Configure environment variables
-cp .env.example .env.local
-# Edit .env.local with your credentials
-
-# 5. Start development server
+# 3. Start development server
 npm run dev
 ```
 
 **Visit**: http://localhost:5000
 
 ### Environment Variables Required
+
+Create a `.env.local` file with:
 
 ```env
 # Supabase (Database)
@@ -119,17 +87,144 @@ SUPABASE_SERVICE_ROLE_KEY=your_key
 GITHUB_CLIENT_ID=your_id
 GITHUB_CLIENT_SECRET=your_secret
 GITHUB_WEBHOOK_SECRET=your_secret
+GITHUB_TOKEN=your_token
+GITHUB_PRIVATE_KEY=your_key (if using GitHub App)
 
 # Google Gemini (for AI)
 GEMINI_API_KEY=your_key
 
 # Discord (optional)
 DISCORD_CLIENT_ID=your_id
+DISCORD_CLIENT_SECRET=your_secret
 DISCORD_TOKEN=your_token
 DISCORD_PUBLIC_KEY=your_key
 
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:5000
+```
+
+---
+
+## 🔧 Full Setup Guide
+
+### Step 1: Create Supabase Project (5 min)
+
+1. Go to https://supabase.com → Sign up
+2. Create new project
+   - Name: opscord
+   - Database password: [strong random]
+   - Region: [closest to you]
+3. Wait 2-3 minutes
+4. Settings > API → Copy:
+   - Project URL
+   - Anon Key
+   - Service Role Key
+
+### Step 2: Setup Database (5 min)
+
+1. In Supabase, go to SQL Editor
+2. Create new query
+3. Paste entire `supabase-schema.sql` file
+4. Click Run
+5. Done! ✓
+
+### Step 3: Create GitHub OAuth App (5 min)
+
+1. Go to https://github.com/settings/developers
+2. OAuth Apps > New OAuth App
+   - Name: OpsCord
+   - Homepage: https://yourdomain.com
+   - Callback: https://yourdomain.com/api/auth/callback
+3. Copy Client ID and Secret
+4. Generate webhook secret:
+   ```bash
+   openssl rand -hex 32
+   ```
+
+### Step 4: Setup Discord Bot (Optional - 5 min)
+
+1. Visit: https://discord.com/developers/applications
+2. Click "New Application" → Name it "OpsCord"
+3. Go to "Bot" section → Click "Add Bot"
+4. Copy the bot token
+5. Go to "General Information" → Copy:
+   - Public Key
+   - Application ID
+6. Go to "OAuth2" → "URL Generator"
+   - Select Scopes: `bot`, `applications.commands`
+   - Select Permissions: Send Messages, Manage Messages, Use Slash Commands, Embed Links
+   - Copy generated URL and authorize bot to your server
+
+### Step 5: Add Google Gemini API Key (Optional - 2 min)
+
+1. Go to https://ai.google.dev/
+2. Click "Get API key"
+3. Copy the API key to your environment variables
+
+---
+
+## 🚀 Deployment Options
+
+### Option A: Vercel (Easiest - 5 min)
+
+```bash
+# 1. Push to GitHub
+git push origin main
+
+# 2. Go to vercel.com
+# 3. Import your GitHub repo
+# 4. Add environment variables
+# 5. Deploy!
+
+# 6. Set GitHub Webhook
+# Settings > Webhooks > Add webhook
+# Payload URL: https://yourvercelapp.com/api/github/webhook
+# Content type: application/json
+# Events: All
+```
+
+**Cost**: Free (or $20/month Pro)
+
+### Option B: AWS (More Control - 15 min)
+
+1. Create EC2 instance (Ubuntu 22.04)
+2. Install Node.js and npm
+3. Clone repository
+4. Create `.env.local` with all variables
+5. Run `npm install --legacy-peer-deps`
+6. Setup PM2 for process management:
+   ```bash
+   npm install -g pm2
+   pm2 start npm --name "opscord" -- run dev
+   pm2 startup
+   pm2 save
+   ```
+7. Use nginx as reverse proxy
+8. Setup SSL with Let's Encrypt
+
+### Option C: Docker (Self-hosted - 15 min)
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 5000
+
+CMD ["npm", "run", "start"]
+```
+
+Deploy with:
+```bash
+docker build -t opscord .
+docker run -p 5000:5000 --env-file .env.local opscord
 ```
 
 ---
@@ -179,12 +274,33 @@ Real-time dashboards show:
 
 ---
 
-## 📚 Documentation
+## 📅 Roadmap (Future Releases)
 
-- **[replit.md](./replit.md)** - Complete setup guide
-- **[PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)** - Detailed feature roadmap
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment guide
-- **[supabase-schema.sql](./supabase-schema.sql)** - Database schema
+### 🔜 Phase 2 (v1.1 - December 2025)
+- Performance optimization
+- Database improvements
+- Error handling enhancements
+- Security audit
+
+### 🔜 Phase 3 (v2.0 - Q1 2026)
+- Issue auto-classification
+- Release notes generator
+- CI failure analysis
+- Admin dashboard
+- Extended analytics
+- Enhanced Discord commands
+
+### 🚀 Phase 4 (v3.0 - Q2-Q3 2026)
+- Automated code review
+- Failure prediction models
+- Conversational DevOps bot
+- GitLab & Slack support
+
+### 🌟 Phase 5 (v4.0 - Q4 2026)
+- Multi-tenant SaaS
+- Subscription plans
+- Kubernetes integration
+- Plugin marketplace
 
 ---
 
@@ -192,42 +308,66 @@ Real-time dashboards show:
 
 ✅ **Enterprise-Grade Security**
 - GitHub OAuth 2.0 for authentication
-- Webhook signature verification
+- Webhook signature verification (HMAC SHA256)
 - Service role key for admin operations
-- Row-level security (RLS) ready
+- Row-level security (RLS) in database
 - HTTPS in production
 - Rate limiting on APIs
-- Secure token storage
+- Secure token storage in HTTP-only cookies
+- Environment variables for all secrets
+- No hardcoded credentials
 
 ---
 
-## 🚀 Deployment
+## 🆘 Troubleshooting
 
-### Recommended: Vercel + Supabase
-```bash
-# 1. Push to GitHub
-git push origin main
+| Issue | Solution |
+|-------|----------|
+| "Invalid API Key" | Check you copied key completely (no spaces) |
+| "Database connection failed" | Verify Supabase project isn't paused |
+| "GitHub login doesn't work" | Check callback URL matches exactly (case-sensitive) |
+| "Webhook not received" | Verify URL is accessible, webhook secret matches |
+| "AI summaries don't work" | Add GEMINI_API_KEY to environment variables |
+| "Discord bot offline" | Check bot token and public key in env vars |
+| "Port 5000 already in use" | `lsof -i :5000` then `kill -9 <PID>` |
 
-# 2. Connect to Vercel
-# - Import repo at vercel.com
-# - Add environment variables
-# - Deploy!
+---
 
-# 3. Set GitHub Webhook
-# - Settings > Webhooks > Add webhook
-# - Payload URL: https://yourvercelapp.com/api/github/webhook
-# - Content type: application/json
-# - Events: All
+## 📊 Project Structure
+
 ```
-
-See `DEPLOYMENT.md` for AWS, Docker, and other options.
+opscord/
+├── app/
+│   ├── api/              # API routes
+│   │   ├── auth/         # GitHub OAuth
+│   │   ├── discord/      # Discord integration
+│   │   ├── github/       # GitHub webhooks
+│   │   └── analytics/    # Analytics endpoints
+│   ├── dashboard/        # Dashboard page
+│   ├── admin/            # Admin panel
+│   └── layout.tsx        # Root layout
+├── components/
+│   ├── ui/               # UI components
+│   ├── dashboard.tsx     # Dashboard component
+│   ├── leaderboard.tsx   # Leaderboard
+│   └── landing-page.tsx  # Landing page
+├── lib/
+│   ├── ai.ts             # AI services
+│   ├── discord.ts        # Discord utilities
+│   ├── github.ts         # GitHub utilities
+│   ├── supabase.ts       # Database client
+│   └── gamification.ts   # XP/Badge logic
+├── migrations/           # Database schema
+├── public/               # Static assets
+└── package.json          # Dependencies
+```
 
 ---
 
 ## 🎓 Academic & Professional Value
 
 ### Resume Bullet
-> "Built OpsCord, an enterprise AI-driven DevOps platform integrating GitHub, Discord, and Google Gemini with real-time analytics, automated PR analysis, and gamified team engagement using Next.js 15, React 19, Supabase, and TypeScript."
+> "Built OpsCord, an enterprise AI-driven DevOps platform integrating GitHub, Discord, and Google Gemini with real-time analytics, automated PR analysis, and gamified team engagement using Next.js 16, React 19, Supabase, and TypeScript."
 
 ### Interview Highlights
 - Full-stack development (Next.js, React, PostgreSQL)
@@ -265,18 +405,18 @@ See `DEPLOYMENT.md` for AWS, Docker, and other options.
 
 ## 🤝 Contributing
 
-This is a personal project, but contributions are welcome:
+This is an open-source project. Contributions are welcome:
 1. Fork the repo
 2. Create a feature branch
 3. Submit a pull request
 
 ---
 
-## 📞 Support
+## 📞 Support & Contact
 
 - **Issues**: Report bugs on GitHub
 - **Discussions**: Feature requests and ideas
-- **Email**: Connect with me for partnership/investment inquiries
+- **Email**: Connect for partnership/investment inquiries
 
 ---
 
@@ -294,6 +434,8 @@ Built with:
 - [Google Gemini](https://ai.google.dev/)
 - [Discord.js](https://discord.js.org/)
 - [shadcn/ui](https://ui.shadcn.com/)
+- [Framer Motion](https://www.framer.com/motion/)
+- [Radix UI](https://www.radix-ui.com/)
 
 ---
 

@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Zap, Shield, ArrowRight, Gauge, Check, Github, MessageCircle, Users, Star, BarChart3, Bell, GitPullRequest, Bot } from "lucide-react"
+import { Zap, Shield, ArrowRight, Gauge, Check, Github, MessageCircle, Users, Star, BarChart3, Bell, GitPullRequest, Bot, CheckCircle2, Circle, Target, Rocket } from "lucide-react"
 
 export default function LandingPage() {
   const containerVariants = {
@@ -352,6 +352,137 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Product Roadmap Section */}
+      <motion.div
+        id="roadmap"
+        className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={containerVariants}
+      >
+        <motion.div className="text-center mb-12 sm:mb-16" variants={itemVariants}>
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            <Rocket className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm font-medium text-gray-300">Product Roadmap</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">What's Coming Next</h2>
+          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto">
+            Our journey from MVP to enterprise SaaS platform
+          </p>
+        </motion.div>
+
+        {/* Roadmap Timeline */}
+        <div className="relative">
+          {/* Timeline line */}
+          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 via-cyan-500 to-purple-500 transform md:-translate-x-1/2" />
+
+          <div className="space-y-8">
+            {[
+              {
+                version: "v1.0",
+                status: "complete",
+                title: "Core Platform",
+                timeline: "November 2025",
+                features: ["GitHub OAuth integration", "Discord webhooks", "AI PR summaries (Gemini)", "Gamification system"],
+                gradient: "from-green-500 to-emerald-600",
+              },
+              {
+                version: "v1.1",
+                status: "in-progress",
+                title: "Stability & Performance",
+                timeline: "December 2025",
+                features: ["Performance optimization", "Database improvements", "Error handling", "Security audit"],
+                gradient: "from-cyan-500 to-blue-600",
+              },
+              {
+                version: "v2.0",
+                status: "planned",
+                title: "Enterprise AI Features",
+                timeline: "Q1 2026",
+                features: ["Issue auto-classification", "Release notes generator", "CI failure analysis", "Admin dashboard"],
+                gradient: "from-purple-500 to-pink-600",
+              },
+              {
+                version: "v3.0",
+                status: "planned",
+                title: "ML Intelligence",
+                timeline: "Q2-Q3 2026",
+                features: ["Automated code review", "Failure prediction", "Anomaly detection", "GitLab & Slack support"],
+                gradient: "from-orange-500 to-red-600",
+              },
+            ].map((phase, idx) => (
+              <motion.div
+                key={phase.version}
+                variants={itemVariants}
+                className={`relative flex items-start gap-6 ${idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+              >
+                {/* Timeline dot */}
+                <div className="absolute left-4 md:left-1/2 w-4 h-4 rounded-full bg-gradient-to-r transform -translate-x-1/2 md:-translate-x-1/2 ring-4 ring-[#0a0a0f] z-10"
+                  style={{ background: phase.status === 'complete' ? '#22c55e' : phase.status === 'in-progress' ? '#06b6d4' : '#6b7280' }}
+                />
+
+                {/* Content card */}
+                <div className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${idx % 2 === 0 ? 'md:mr-auto md:pr-8' : 'md:ml-auto md:pl-8'}`}>
+                  <motion.div
+                    className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:border-cyan-500/30 transition-all"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      {phase.status === 'complete' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                      {phase.status === 'in-progress' && <Circle className="w-5 h-5 text-cyan-400 animate-pulse" />}
+                      {phase.status === 'planned' && <Circle className="w-5 h-5 text-gray-500" />}
+                      <span className={`text-lg font-bold bg-gradient-to-r ${phase.gradient} bg-clip-text text-transparent`}>
+                        {phase.version}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        phase.status === 'complete' ? 'bg-green-500/20 text-green-400' :
+                        phase.status === 'in-progress' ? 'bg-cyan-500/20 text-cyan-400' :
+                        'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {phase.status === 'complete' ? 'Complete' : phase.status === 'in-progress' ? 'In Progress' : 'Planned'}
+                      </span>
+                    </div>
+                    <h3 className="text-white font-semibold mb-1">{phase.title}</h3>
+                    <p className="text-sm text-gray-500 mb-3">{phase.timeline}</p>
+                    <ul className="space-y-1">
+                      {phase.features.map((feature, fIdx) => (
+                        <li key={fIdx} className="text-sm text-gray-400 flex items-center gap-2">
+                          <span className="w-1 h-1 rounded-full bg-cyan-400" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Success Metrics */}
+        <motion.div variants={itemVariants} className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Monthly Active Teams", target: "1,000+", icon: "👥" },
+            { label: "Paying Customers", target: "100+", icon: "💰" },
+            { label: "API Uptime", target: "99.9%", icon: "⚡" },
+            { label: "User Rating", target: "4.5+", icon: "⭐" },
+          ].map((metric, idx) => (
+            <motion.div
+              key={idx}
+              className="p-4 rounded-xl border border-white/10 bg-white/5 text-center hover:border-cyan-500/30 transition-all"
+              whileHover={{ y: -3 }}
+            >
+              <div className="text-2xl mb-2">{metric.icon}</div>
+              <p className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                {metric.target}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">{metric.label}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </motion.div>
 
       {/* Final CTA */}

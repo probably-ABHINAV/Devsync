@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
@@ -10,15 +10,17 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { motion, AnimatePresence } from "framer-motion"
+import Link from "next/link"
 import RepoCard from "./repo-card"
-import ActivityFeed from "./activity-feed"
+import ActivityFeed, { ActivityFeedRef } from "./activity-feed"
 import Leaderboard from "./leaderboard"
 import UserBadges from "./user-badges"
 import { 
   LogOut, Github, MessageCircle, Activity, Trophy, Award, Settings, 
   Bell, GitPullRequest, GitCommit, AlertCircle, CheckCircle, 
   TrendingUp, Users, Zap, Shield, ExternalLink, RefreshCw,
-  GitBranch, Bug, Tag, Eye, Clock, BarChart3
+  GitBranch, Bug, Tag, Eye, Clock, BarChart3, Home, List, Grid3X3,
+  Folder, Code, FolderOpen
 } from "lucide-react"
 
 interface Repo {
@@ -30,6 +32,7 @@ interface Repo {
   language: string | null
   openIssues: number
   openPRs: number
+  updated_at?: string
 }
 
 interface User {
@@ -50,13 +53,39 @@ interface EventType {
   description: string
 }
 
+type ViewMode = "grouped" | "list"
+
+const LANGUAGE_COLORS: Record<string, { gradient: string; bg: string; text: string }> = {
+  TypeScript: { gradient: "from-blue-500 to-cyan-500", bg: "bg-blue-500/10", text: "text-blue-400" },
+  JavaScript: { gradient: "from-yellow-500 to-orange-500", bg: "bg-yellow-500/10", text: "text-yellow-400" },
+  Python: { gradient: "from-green-500 to-emerald-500", bg: "bg-green-500/10", text: "text-green-400" },
+  Rust: { gradient: "from-orange-500 to-red-500", bg: "bg-orange-500/10", text: "text-orange-400" },
+  Go: { gradient: "from-cyan-500 to-teal-500", bg: "bg-cyan-500/10", text: "text-cyan-400" },
+  Java: { gradient: "from-red-500 to-orange-500", bg: "bg-red-500/10", text: "text-red-400" },
+  "C++": { gradient: "from-purple-500 to-pink-500", bg: "bg-purple-500/10", text: "text-purple-400" },
+  C: { gradient: "from-gray-500 to-slate-500", bg: "bg-gray-500/10", text: "text-gray-400" },
+  Ruby: { gradient: "from-red-600 to-pink-600", bg: "bg-red-500/10", text: "text-red-400" },
+  PHP: { gradient: "from-indigo-500 to-purple-500", bg: "bg-indigo-500/10", text: "text-indigo-400" },
+  Swift: { gradient: "from-orange-400 to-red-500", bg: "bg-orange-500/10", text: "text-orange-400" },
+  Kotlin: { gradient: "from-purple-400 to-orange-500", bg: "bg-purple-500/10", text: "text-purple-400" },
+  Shell: { gradient: "from-green-600 to-lime-500", bg: "bg-green-500/10", text: "text-green-400" },
+  HTML: { gradient: "from-orange-500 to-red-400", bg: "bg-orange-500/10", text: "text-orange-400" },
+  CSS: { gradient: "from-blue-400 to-purple-500", bg: "bg-blue-500/10", text: "text-blue-400" },
+  Other: { gradient: "from-gray-400 to-slate-500", bg: "bg-gray-500/10", text: "text-gray-400" },
+}
+
 export default function Dashboard({ user }: DashboardProps) {
   const [repos, setRepos] = useState<Repo[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [discordConnected, setDiscordConnected] = useState(false)
   const [webhookUrl, setWebhookUrl] = useState("")
   const [savingWebhook, setSavingWebhook] = useState(false)
   const [webhookMessage, setWebhookMessage] = useState({ type: "", text: "" })
+  const [activeTab, setActiveTab] = useState("overview")
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped")
+  const activityFeedRef = useRef<ActivityFeedRef>(null)
+  
   const [eventTypes, setEventTypes] = useState<EventType[]>([
     { id: "push", name: "Push Events", icon: <GitCommit className="w-4 h-4" />, enabled: true, description: "Code pushes to branches" },
     { id: "pull_request", name: "Pull Requests", icon: <GitPullRequest className="w-4 h-4" />, enabled: true, description: "PR opened, closed, merged" },
@@ -83,6 +112,22 @@ export default function Dashboard({ user }: DashboardProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRefreshData = async () => {
+    setRefreshing(true)
+    try {
+      await Promise.all([
+        loadRepos(),
+        activityFeedRef.current?.refresh()
+      ])
+    } finally {
+      setTimeout(() => setRefreshing(false), 500)
+    }
+  }
+
+  const handleSetupNotifications = () => {
+    setActiveTab("notifications")
   }
 
   const checkDiscordStatus = async () => {
@@ -134,6 +179,33 @@ export default function Dashboard({ user }: DashboardProps) {
     setEventTypes(prev => prev.map(e => e.id === id ? { ...e, enabled: !e.enabled } : e))
   }
 
+  const recentlyUpdatedRepos = useMemo(() => {
+    return [...repos]
+      .sort((a, b) => {
+        const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0
+        const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0
+        return dateB - dateA
+      })
+      .slice(0, 4)
+  }, [repos])
+
+  const groupedRepos = useMemo(() => {
+    const groups: Record<string, Repo[]> = {}
+    repos.forEach(repo => {
+      const lang = repo.language || "Other"
+      if (!groups[lang]) {
+        groups[lang] = []
+      }
+      groups[lang].push(repo)
+    })
+    const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length)
+    return sortedGroups
+  }, [repos])
+
+  const getLanguageStyle = (lang: string) => {
+    return LANGUAGE_COLORS[lang] || LANGUAGE_COLORS.Other
+  }
+
   const totalIssues = repos.reduce((sum, r) => sum + r.openIssues, 0)
   const totalPRs = repos.reduce((sum, r) => sum + r.openPRs, 0)
 
@@ -149,14 +221,12 @@ export default function Dashboard({ user }: DashboardProps) {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-cyan-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Header */}
       <motion.header
         className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl"
         initial={{ y: -100 }}
@@ -193,6 +263,15 @@ export default function Dashboard({ user }: DashboardProps) {
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
+            <Link href="/">
+              <Button
+                variant="outline"
+                className="border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white gap-2"
+              >
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+            </Link>
             <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
               discordConnected 
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
@@ -216,7 +295,6 @@ export default function Dashboard({ user }: DashboardProps) {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
           
-          {/* Hero Metrics */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { 
@@ -273,27 +351,26 @@ export default function Dashboard({ user }: DashboardProps) {
             ))}
           </motion.div>
 
-          {/* Quick Actions Bar */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
             <Button 
-              onClick={loadRepos}
-              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white gap-2"
+              onClick={handleRefreshData}
+              disabled={refreshing}
+              className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white gap-2 disabled:opacity-50"
             >
-              <RefreshCw className="w-4 h-4" />
-              Refresh Data
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh Data'}
             </Button>
             <Button 
               className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:opacity-90 gap-2"
-              onClick={() => document.querySelector('[value="notifications"]')?.dispatchEvent(new Event('click', { bubbles: true }))}
+              onClick={handleSetupNotifications}
             >
               <Bell className="w-4 h-4" />
               Setup Notifications
             </Button>
           </motion.div>
 
-          {/* Main Tabs */}
           <motion.div variants={itemVariants}>
-            <Tabs defaultValue="overview" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full max-w-2xl mx-auto grid grid-cols-4 bg-white/5 border border-white/10 p-1 rounded-xl">
                 <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-white rounded-lg gap-2">
                   <Github className="w-4 h-4" />
@@ -313,14 +390,34 @@ export default function Dashboard({ user }: DashboardProps) {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Overview Tab */}
               <TabsContent value="overview" className="mt-8 space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <h2 className="text-2xl font-bold text-white">Your Repositories</h2>
                     <p className="text-gray-400 text-sm mt-1">Monitor and manage your GitHub repositories</p>
                   </div>
+                  <div className="flex items-center gap-2 p-1 rounded-lg bg-white/5 border border-white/10">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewMode("grouped")}
+                      className={`gap-2 ${viewMode === 'grouped' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      <Folder className="w-4 h-4" />
+                      Grouped
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className={`gap-2 ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      <List className="w-4 h-4" />
+                      All
+                    </Button>
+                  </div>
                 </div>
+
                 {loading ? (
                   <div className="flex justify-center py-16">
                     <Spinner />
@@ -331,25 +428,84 @@ export default function Dashboard({ user }: DashboardProps) {
                     <p className="text-gray-400">No repositories found</p>
                     <p className="text-gray-500 text-sm mt-2">Connect your GitHub account to see your repos</p>
                   </div>
+                ) : viewMode === "grouped" ? (
+                  <div className="space-y-8">
+                    {recentlyUpdatedRepos.length > 0 && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
+                            <Clock className="w-5 h-5 text-cyan-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">Recently Updated</h3>
+                            <p className="text-xs text-gray-500">Your most recently active repositories</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {recentlyUpdatedRepos.map((repo) => (
+                            <RepoCard key={`recent-${repo.id}`} repo={repo} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {groupedRepos.map(([language, langRepos]) => {
+                      const style = getLanguageStyle(language)
+                      return (
+                        <motion.div 
+                          key={language} 
+                          className="space-y-4"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg bg-gradient-to-br ${style.bg}`}>
+                              <Code className={`w-5 h-5 ${style.text}`} />
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg font-semibold text-white">{language}</h3>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} border border-current/20`}>
+                                {langRepos.length} {langRepos.length === 1 ? 'repo' : 'repos'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {langRepos.map((repo) => (
+                              <RepoCard key={repo.id} repo={repo} />
+                            ))}
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {repos.map((repo) => (
-                      <RepoCard key={repo.id} repo={repo} />
-                    ))}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                        <FolderOpen className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">All Repositories</h3>
+                        <p className="text-xs text-gray-500">{repos.length} repositories total</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {repos.map((repo) => (
+                        <RepoCard key={repo.id} repo={repo} />
+                      ))}
+                    </div>
                   </div>
                 )}
               </TabsContent>
 
-              {/* Activity Tab */}
               <TabsContent value="activity" className="mt-8 space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Activity Timeline</h2>
                   <p className="text-gray-400 text-sm mt-1">Track your recent contributions and events</p>
                 </div>
-                <ActivityFeed />
+                <ActivityFeed ref={activityFeedRef} />
               </TabsContent>
 
-              {/* Analytics Tab */}
               <TabsContent value="analytics" className="mt-8 space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Team Analytics</h2>
@@ -377,7 +533,6 @@ export default function Dashboard({ user }: DashboardProps) {
                 </div>
               </TabsContent>
 
-              {/* Notifications Tab - Discord Channel Setup */}
               <TabsContent value="notifications" className="mt-8 space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Discord Notifications</h2>
@@ -385,7 +540,6 @@ export default function Dashboard({ user }: DashboardProps) {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Webhook Setup Card */}
                   <motion.div 
                     className="relative p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
@@ -463,7 +617,6 @@ export default function Dashboard({ user }: DashboardProps) {
                     </div>
                   </motion.div>
 
-                  {/* Event Types Card */}
                   <motion.div 
                     className="relative p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
@@ -517,7 +670,6 @@ export default function Dashboard({ user }: DashboardProps) {
                   </motion.div>
                 </div>
 
-                {/* Status Section */}
                 <motion.div 
                   className="p-6 rounded-2xl border border-white/10 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-sm"
                   initial={{ opacity: 0, y: 20 }}
