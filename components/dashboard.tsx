@@ -11,8 +11,7 @@ import DiscordConfig from "./discord-config"
 import ActivityFeed from "./activity-feed"
 import Leaderboard from "./leaderboard"
 import UserBadges from "./user-badges"
-import RoadmapView from "./roadmap-view"
-import { LogOut, Github, MessageCircle, Gauge, Activity, Trophy, Award, Settings, Rocket } from "lucide-react"
+import { LogOut, Github, MessageCircle, Gauge, Activity, Trophy, Award, Settings } from "lucide-react"
 
 interface Repo {
   id: number
@@ -91,7 +90,7 @@ export default function Dashboard({ user }: DashboardProps) {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6 },
+      transition: { duration: 0.6, ease: "easeInOut" },
     },
   }
 
@@ -102,7 +101,7 @@ export default function Dashboard({ user }: DashboardProps) {
         className="sticky top-0 z-40 border-b border-border/10 bg-background/40 backdrop-blur-xl"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <motion.div
@@ -184,62 +183,10 @@ export default function Dashboard({ user }: DashboardProps) {
             ))}
           </motion.div>
 
-          {/* Product Roadmap Preview */}
-          <motion.div variants={itemVariants} className="mb-12">
-            <div className="relative p-8 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-card/50 to-background/50 backdrop-blur-sm overflow-hidden group hover:border-accent/50 transition-all">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-accent/20 to-transparent opacity-30 blur-2xl" />
-              
-              <div className="relative space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Rocket className="w-6 h-6 text-accent" />
-                    <h3 className="text-2xl font-bold text-foreground">Product Roadmap</h3>
-                  </div>
-                  <p className="text-muted-foreground">Evolution from MVP to enterprise SaaS platform</p>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                  {[
-                    { version: "v1.0", status: "Complete", color: "bg-green-500/20 border-green-500/50 text-green-600" },
-                    { version: "v1.1", status: "Planned", color: "bg-blue-500/20 border-blue-500/50 text-blue-600" },
-                    { version: "v2.0", status: "Planned", color: "bg-purple-500/20 border-purple-500/50 text-purple-600" },
-                    { version: "v3.0", status: "Planned", color: "bg-orange-500/20 border-orange-500/50 text-orange-600" },
-                    { version: "v4.0", status: "Planned", color: "bg-indigo-500/20 border-indigo-500/50 text-indigo-600" },
-                  ].map((phase, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`p-3 rounded-lg border ${phase.color} text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105`}
-                    >
-                      <p className="font-bold text-sm">{phase.version}</p>
-                      <p className="text-xs opacity-75">{phase.status}</p>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border/30">
-                  <p className="text-sm text-muted-foreground">2026 Target: 1,000+ teams • 100+ paying customers • 99.9% uptime</p>
-                  <button
-                    onClick={() => {
-                      const button = document.querySelector('[value="roadmap"]') as HTMLElement
-                      button?.click()
-                    }}
-                    className="text-sm font-semibold text-accent hover:underline cursor-pointer bg-transparent border-none p-0"
-                  >
-                    View Full Roadmap →
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Main Content Tabs */}
           <motion.div variants={itemVariants}>
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 mb-8">
+              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
                 <TabsTrigger value="overview" className="gap-2">
                   <Github className="w-4 h-4" />
                   <span className="hidden sm:inline">Overview</span>
@@ -251,10 +198,6 @@ export default function Dashboard({ user }: DashboardProps) {
                 <TabsTrigger value="analytics" className="gap-2">
                   <Trophy className="w-4 h-4" />
                   <span className="hidden sm:inline">Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger value="roadmap" className="gap-2">
-                  <Rocket className="w-4 h-4" />
-                  <span className="hidden sm:inline">Roadmap</span>
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="gap-2">
                   <Settings className="w-4 h-4" />
@@ -307,10 +250,6 @@ export default function Dashboard({ user }: DashboardProps) {
                     </div>
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="roadmap" className="space-y-6">
-                <RoadmapView />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">

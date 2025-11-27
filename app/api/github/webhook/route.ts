@@ -1,4 +1,4 @@
-import { sendDiscordMessage, DISCORD_COLORS, formatDuration, truncateText, type DiscordEmbedField } from "@/lib/discord"
+import { sendDiscordMessage } from "@/lib/discord"
 import { summarizePR } from "@/lib/ai"
 import { awardXP } from "@/lib/gamification"
 import { getServiceSupabase } from "@/lib/supabase"
@@ -8,7 +8,6 @@ import crypto from "crypto"
 export async function POST(request: NextRequest) {
   try {
     const signature = request.headers.get("x-hub-signature-256")
-    const eventType = request.headers.get("x-github-event")
     const body = await request.text()
 
     // Verify webhook signature
@@ -74,7 +73,7 @@ export async function POST(request: NextRequest) {
             avatar_url: event.sender.avatar_url,
             name: event.sender.login,
             email: null,
-            github_token: '',
+            github_token: '', // Will be set when they log in
           })
           .select('id')
           .single()
@@ -87,32 +86,14 @@ export async function POST(request: NextRequest) {
     let message = ""
     let title = ""
     let activityType = ""
-    let embedColor = DISCORD_COLORS.DEFAULT
-    let embedUrl = ""
-    let embedFields: DiscordEmbedField[] = []
-    let embedAuthor = event.sender ? {
-      name: event.sender.login,
-      url: event.sender.html_url,
-      icon_url: event.sender.avatar_url
-    } : undefined
-    let embedFooter = event.repository ? {
-      text: event.repository.full_name,
-      icon_url: event.repository.owner?.avatar_url
-    } : undefined
+    let description = ""
 
     // PR Events
     if (event.action === "opened" && event.pull_request) {
       title = "🔀 New Pull Request"
-      message = `**${event.pull_request.title}**\n\n${truncateText(event.pull_request.body || 'No description provided.', 500)}`
+      message = `**[${event.repository.name}]** ${event.pull_request.title}\n${event.pull_request.html_url}`
       activityType = "pr_opened"
-      embedColor = DISCORD_COLORS.INFO
-      embedUrl = event.pull_request.html_url
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Author", value: event.pull_request.user.login, inline: true },
-        { name: "Branch", value: `${event.pull_request.head.ref} → ${event.pull_request.base.ref}`, inline: true },
-      ]
+      description = event.pull_request.title
       
       // Award XP to contributor
       if (contributorUserId) {
@@ -140,25 +121,16 @@ export async function POST(request: NextRequest) {
           complexity: summary.complexity,
         })
 
-        // Enhanced message with AI summary
-        const complexityEmoji = summary.complexity === 'low' ? '🟢' : summary.complexity === 'high' ? '🔴' : '🟡'
-        message = `**${event.pull_request.title}**\n\n**🤖 AI Summary:**\n${summary.summary}`
-        
-        embedFields.push(
-          { name: "Complexity", value: `${complexityEmoji} ${summary.complexity.toUpperCase()}`, inline: true },
-          { name: "Key Changes", value: summary.keyChanges.slice(0, 3).map(c => `• ${truncateText(c, 100)}`).join('\n') || 'None', inline: false }
-        )
+        // Enhanced Discord message with AI summary
+        const complexityColor = summary.complexity === 'low' ? '🟢' : summary.complexity === 'high' ? '🔴' : '🟡'
+        message = `**[${event.repository.name}]** ${event.pull_request.title}\n${event.pull_request.html_url}\n\n**🤖 AI Summary:**\n${summary.summary}\n\n**Complexity:** ${complexityColor} ${summary.complexity.toUpperCase()}\n\n**Key Changes:**\n${summary.keyChanges.map(c => `• ${c}`).join('\n')}`
         
         if (summary.risks.length > 0) {
-          embedFields.push({
-            name: "⚠️ Risks",
-            value: summary.risks.slice(0, 3).map(r => `• ${truncateText(r, 100)}`).join('\n'),
-            inline: false
-          })
-          embedColor = DISCORD_COLORS.WARNING
+          message += `\n\n**⚠️ Risks:**\n${summary.risks.map(r => `• ${r}`).join('\n')}`
         }
       } catch (aiError) {
         console.error('AI summary failed:', aiError)
+        // Continue with basic notification
       }
 
       // Log activity for contributor
@@ -179,18 +151,8 @@ export async function POST(request: NextRequest) {
     } 
     else if (event.action === "closed" && event.pull_request?.merged) {
       title = "✅ Pull Request Merged"
-      message = `**${event.pull_request.title}**\n\n🎉 Successfully merged into \`${event.pull_request.base.ref}\``
+      message = `**[${event.repository.name}]** ${event.pull_request.title}\n${event.pull_request.html_url}\n\n🎉 Merged by ${event.pull_request.merged_by?.login || 'unknown'}`
       activityType = "pr_merged"
-      embedColor = DISCORD_COLORS.SUCCESS
-      embedUrl = event.pull_request.html_url
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Merged By", value: event.pull_request.merged_by?.login || 'unknown', inline: true },
-        { name: "Commits", value: `${event.pull_request.commits || 0}`, inline: true },
-        { name: "Changes", value: `+${event.pull_request.additions || 0} / -${event.pull_request.deletions || 0}`, inline: true },
-        { name: "Files Changed", value: `${event.pull_request.changed_files || 0}`, inline: true },
-      ]
       
       // Award XP for merged PR to contributor
       if (contributorUserId) {
@@ -213,42 +175,10 @@ export async function POST(request: NextRequest) {
         })
       }
     }
-    else if (event.action === "closed" && event.pull_request && !event.pull_request.merged) {
-      title = "❌ Pull Request Closed"
-      message = `**${event.pull_request.title}**\n\nClosed without merging.`
-      activityType = "pr_closed"
-      embedColor = DISCORD_COLORS.FAILURE
-      embedUrl = event.pull_request.html_url
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Closed By", value: event.sender?.login || 'unknown', inline: true },
-      ]
-    }
     else if (event.action === "submitted" && event.review) {
-      const reviewState = event.review.state
-      let reviewEmoji = "👀"
-      
-      if (reviewState === "approved") {
-        reviewEmoji = "✅"
-        embedColor = DISCORD_COLORS.SUCCESS
-      } else if (reviewState === "changes_requested") {
-        reviewEmoji = "🔄"
-        embedColor = DISCORD_COLORS.WARNING
-      } else {
-        embedColor = DISCORD_COLORS.INFO
-      }
-      
-      title = `${reviewEmoji} PR Review: ${reviewState.replace('_', ' ').toUpperCase()}`
-      message = event.review.body ? truncateText(event.review.body, 500) : `Review submitted on PR #${event.pull_request.number}`
+      title = "👀 PR Review Submitted"
+      message = `**[${event.repository.name}]** Review on PR #${event.pull_request.number}\nBy: ${event.review.user.login}\n${event.review.html_url}`
       activityType = "pr_reviewed"
-      embedUrl = event.review.html_url
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Reviewer", value: event.review.user.login, inline: true },
-        { name: "PR", value: `#${event.pull_request.number}: ${truncateText(event.pull_request.title, 50)}`, inline: false },
-      ]
       
       // Award XP for review
       const { data: reviewer } = await supabase
@@ -261,20 +191,10 @@ export async function POST(request: NextRequest) {
         await awardXP(reviewer.id, 'PR_REVIEWED')
       }
     }
-    // Issue Events
     else if (event.action === "opened" && event.issue) {
       title = "📝 New Issue"
-      message = `**${event.issue.title}**\n\n${truncateText(event.issue.body || 'No description provided.', 500)}`
+      message = `**[${event.repository.name}]** ${event.issue.title}\n${event.issue.html_url}`
       activityType = "issue_opened"
-      embedColor = DISCORD_COLORS.INFO
-      embedUrl = event.issue.html_url
-      
-      const labels = event.issue.labels?.map((l: any) => l.name).join(', ') || 'None'
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Author", value: event.issue.user.login, inline: true },
-        { name: "Labels", value: labels, inline: true },
-      ]
       
       // Award XP to contributor
       if (contributorUserId) {
@@ -297,18 +217,9 @@ export async function POST(request: NextRequest) {
       }
     }
     else if (event.action === "closed" && event.issue) {
-      const isCompleted = event.issue.state_reason === "completed"
-      title = isCompleted ? "✅ Issue Resolved" : "🔒 Issue Closed"
-      message = `**${event.issue.title}**\n\n${isCompleted ? 'Issue has been resolved.' : 'Issue was closed as not planned.'}`
+      title = "✅ Issue Closed"
+      message = `**[${event.repository.name}]** ${event.issue.title}\n${event.issue.html_url}`
       activityType = "issue_closed"
-      embedColor = isCompleted ? DISCORD_COLORS.SUCCESS : DISCORD_COLORS.WARNING
-      embedUrl = event.issue.html_url
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Closed By", value: event.sender?.login || 'unknown', inline: true },
-        { name: "Reason", value: event.issue.state_reason || 'Unknown', inline: true },
-      ]
       
       // Award XP to contributor
       if (contributorUserId) {
@@ -330,44 +241,11 @@ export async function POST(request: NextRequest) {
         })
       }
     }
-    // Push Events
-    else if (eventType === "push" && event.ref && event.repository && event.commits) {
+    else if (event.ref && event.repository && event.commits) {
+      title = "🚀 New Push"
       const branch = event.ref.split("/").pop()
       const commitCount = event.commits?.length || 0
-      
-      title = "🚀 New Push"
-      embedColor = DISCORD_COLORS.INFO
-      embedUrl = event.compare || event.repository.html_url
-      
-      // Build commit details
-      const commitDetails = event.commits.slice(0, 5).map((commit: any) => {
-        const shortSha = commit.id.substring(0, 7)
-        const commitMessage = truncateText(commit.message.split('\n')[0], 60)
-        return `[\`${shortSha}\`](${commit.url}) ${commitMessage} - ${commit.author.username || commit.author.name}`
-      }).join('\n')
-      
-      message = `**${commitCount} commit${commitCount !== 1 ? 's' : ''}** pushed to \`${branch}\`\n\n${commitDetails}`
-      
-      if (commitCount > 5) {
-        message += `\n\n*...and ${commitCount - 5} more commit${commitCount - 5 !== 1 ? 's' : ''}*`
-      }
-      
-      // Calculate total changes
-      let totalAdded = 0
-      let totalRemoved = 0
-      let totalModified = 0
-      event.commits.forEach((commit: any) => {
-        totalAdded += commit.added?.length || 0
-        totalRemoved += commit.removed?.length || 0
-        totalModified += commit.modified?.length || 0
-      })
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Branch", value: branch || 'unknown', inline: true },
-        { name: "Pusher", value: event.pusher?.name || event.sender?.login || 'unknown', inline: true },
-        { name: "Files Changed", value: `+${totalAdded} | ~${totalModified} | -${totalRemoved}`, inline: true },
-      ]
+      message = `**[${event.repository.name}:${branch}]** ${commitCount} new commit${commitCount !== 1 ? 's' : ''}`
       
       // Award XP for commits to contributor
       if (contributorUserId && commitCount > 0) {
@@ -375,199 +253,11 @@ export async function POST(request: NextRequest) {
           await awardXP(contributorUserId, 'COMMIT')
         }
       }
-
-      activityType = "push"
-    }
-    // Release Events
-    else if (eventType === "release" && event.release) {
-      const release = event.release
-      const isPrerelease = release.prerelease
-      const isDraft = release.draft
-      
-      if (event.action === "published" || event.action === "created") {
-        title = isPrerelease ? "🧪 Pre-release Published" : "🎉 New Release Published"
-        embedColor = isPrerelease ? DISCORD_COLORS.WARNING : DISCORD_COLORS.SUCCESS
-        embedUrl = release.html_url
-        
-        const releaseNotes = release.body 
-          ? truncateText(release.body, 800)
-          : 'No release notes provided.'
-        
-        message = `**${release.name || release.tag_name}**\n\n${releaseNotes}`
-        
-        embedFields = [
-          { name: "Repository", value: event.repository.name, inline: true },
-          { name: "Tag", value: release.tag_name, inline: true },
-          { name: "Author", value: release.author?.login || 'unknown', inline: true },
-        ]
-        
-        if (release.assets && release.assets.length > 0) {
-          const assetList = release.assets.slice(0, 3).map((asset: any) => 
-            `[${asset.name}](${asset.browser_download_url})`
-          ).join('\n')
-          embedFields.push({
-            name: "📦 Downloads",
-            value: assetList + (release.assets.length > 3 ? `\n*...and ${release.assets.length - 3} more*` : ''),
-            inline: false
-          })
-        }
-        
-        if (release.tarball_url) {
-          embedFields.push({
-            name: "Source Code",
-            value: `[tar.gz](${release.tarball_url}) | [zip](${release.zipball_url})`,
-            inline: true
-          })
-        }
-        
-        activityType = "release_published"
-      }
-    }
-    // Workflow Run Events (CI/CD)
-    else if (eventType === "workflow_run" && event.workflow_run) {
-      const run = event.workflow_run
-      const conclusion = run.conclusion
-      const status = run.status
-      
-      // Only notify on completed runs or specific actions
-      if (event.action === "completed") {
-        let statusEmoji = "⏳"
-        
-        if (conclusion === "success") {
-          statusEmoji = "✅"
-          embedColor = DISCORD_COLORS.SUCCESS
-        } else if (conclusion === "failure") {
-          statusEmoji = "❌"
-          embedColor = DISCORD_COLORS.FAILURE
-        } else if (conclusion === "cancelled") {
-          statusEmoji = "🚫"
-          embedColor = DISCORD_COLORS.WARNING
-        } else if (conclusion === "timed_out") {
-          statusEmoji = "⏰"
-          embedColor = DISCORD_COLORS.FAILURE
-        } else if (conclusion === "skipped") {
-          statusEmoji = "⏭️"
-          embedColor = DISCORD_COLORS.DEFAULT
-        }
-        
-        title = `${statusEmoji} Workflow: ${run.name}`
-        embedUrl = run.html_url
-        
-        const duration = run.run_started_at && run.updated_at 
-          ? formatDuration(run.run_started_at, run.updated_at)
-          : 'Unknown'
-        
-        message = `**${conclusion?.toUpperCase() || status?.toUpperCase()}**\n\nWorkflow \`${run.name}\` has ${conclusion || status}.`
-        
-        embedFields = [
-          { name: "Repository", value: event.repository.name, inline: true },
-          { name: "Branch", value: run.head_branch || 'unknown', inline: true },
-          { name: "Run #", value: `${run.run_number}`, inline: true },
-          { name: "Duration", value: duration, inline: true },
-          { name: "Triggered By", value: run.triggering_actor?.login || run.actor?.login || 'unknown', inline: true },
-          { name: "Event", value: run.event || 'unknown', inline: true },
-        ]
-        
-        if (run.head_commit?.message) {
-          embedFields.push({
-            name: "Commit",
-            value: truncateText(run.head_commit.message.split('\n')[0], 100),
-            inline: false
-          })
-        }
-        
-        activityType = "workflow_completed"
-      } else if (event.action === "requested") {
-        title = `⏳ Workflow Started: ${run.name}`
-        embedColor = DISCORD_COLORS.INFO
-        embedUrl = run.html_url
-        message = `Workflow \`${run.name}\` has been triggered.`
-        
-        embedFields = [
-          { name: "Repository", value: event.repository.name, inline: true },
-          { name: "Branch", value: run.head_branch || 'unknown', inline: true },
-          { name: "Triggered By", value: run.triggering_actor?.login || run.actor?.login || 'unknown', inline: true },
-        ]
-        
-        activityType = "workflow_started"
-      }
-    }
-    // Fork Events
-    else if (eventType === "fork" && event.forkee) {
-      title = "🍴 Repository Forked"
-      embedColor = DISCORD_COLORS.INFO
-      embedUrl = event.forkee.html_url
-      
-      message = `**${event.sender?.login}** forked this repository!\n\nNew fork: [${event.forkee.full_name}](${event.forkee.html_url})`
-      
-      embedFields = [
-        { name: "Original Repository", value: event.repository.full_name, inline: true },
-        { name: "Fork", value: event.forkee.full_name, inline: true },
-        { name: "Forked By", value: event.sender?.login || 'unknown', inline: true },
-      ]
-      
-      activityType = "fork"
-    }
-    // Star Events
-    else if (eventType === "star" && event.action) {
-      if (event.action === "created") {
-        title = "⭐ New Star"
-        embedColor = DISCORD_COLORS.SUCCESS
-        embedUrl = event.repository.html_url
-        
-        const starCount = event.repository.stargazers_count || 0
-        message = `**${event.sender?.login}** starred this repository!\n\n🌟 Total stars: **${starCount}**`
-        
-        embedFields = [
-          { name: "Repository", value: event.repository.name, inline: true },
-          { name: "Starred By", value: event.sender?.login || 'unknown', inline: true },
-          { name: "Total Stars", value: `${starCount}`, inline: true },
-        ]
-        
-        activityType = "star_added"
-      } else if (event.action === "deleted") {
-        title = "💔 Star Removed"
-        embedColor = DISCORD_COLORS.WARNING
-        embedUrl = event.repository.html_url
-        
-        const starCount = event.repository.stargazers_count || 0
-        message = `**${event.sender?.login}** unstarred this repository.\n\n⭐ Total stars: **${starCount}**`
-        
-        embedFields = [
-          { name: "Repository", value: event.repository.name, inline: true },
-          { name: "Unstarred By", value: event.sender?.login || 'unknown', inline: true },
-          { name: "Total Stars", value: `${starCount}`, inline: true },
-        ]
-        
-        activityType = "star_removed"
-      }
-    }
-    // Watch Events (alternative star tracking)
-    else if (eventType === "watch" && event.action === "started") {
-      title = "👀 New Watcher"
-      embedColor = DISCORD_COLORS.INFO
-      embedUrl = event.repository.html_url
-      
-      message = `**${event.sender?.login}** is now watching this repository!`
-      
-      embedFields = [
-        { name: "Repository", value: event.repository.name, inline: true },
-        { name: "Watcher", value: event.sender?.login || 'unknown', inline: true },
-        { name: "Total Watchers", value: `${event.repository.watchers_count || 0}`, inline: true },
-      ]
-      
-      activityType = "watch"
     }
 
     // Send to Discord if configured
     if (message && webhookUrl) {
-      await sendDiscordMessage(webhookUrl, message, title, {
-        color: embedColor,
-        url: embedUrl || undefined,
-        author: embedAuthor,
-        footer: embedFooter,
-        fields: embedFields.length > 0 ? embedFields : undefined,
-      })
+      await sendDiscordMessage(webhookUrl, message, title)
     }
 
     // Store webhook event (for repo owner)
@@ -575,7 +265,7 @@ export async function POST(request: NextRequest) {
       await supabase.from('webhooks').insert({
         user_id: repoOwnerUserId,
         repo_name: event.repository?.name || 'unknown',
-        event_type: eventType || event.action || 'unknown',
+        event_type: event.action || 'unknown',
         payload: event,
       })
     }

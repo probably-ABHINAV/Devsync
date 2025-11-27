@@ -37,8 +37,6 @@ export async function GET(request: NextRequest) {
       name: userData.name || userData.login,
       email: userData.email,
       github_token: token,
-    }, {
-      onConflict: 'github_id'
     })
     
     if (upsertError) {
