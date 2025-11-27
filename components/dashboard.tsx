@@ -15,6 +15,7 @@ import RepoCard from "./repo-card"
 import ActivityFeed, { ActivityFeedRef } from "./activity-feed"
 import Leaderboard from "./leaderboard"
 import UserBadges from "./user-badges"
+import DiscordChannelSelector from "./discord-channel-selector"
 import { 
   LogOut, Github, MessageCircle, Activity, Trophy, Award, Settings, 
   Bell, GitPullRequest, GitCommit, AlertCircle, CheckCircle, 
@@ -84,6 +85,8 @@ export default function Dashboard({ user }: DashboardProps) {
   const [webhookMessage, setWebhookMessage] = useState({ type: "", text: "" })
   const [activeTab, setActiveTab] = useState("overview")
   const [viewMode, setViewMode] = useState<ViewMode>("grouped")
+  const [showChannelSelector, setShowChannelSelector] = useState(false)
+  const [selectedChannel, setSelectedChannel] = useState({ serverId: "", channelId: "", channelName: "" })
   const activityFeedRef = useRef<ActivityFeedRef>(null)
   
   const [eventTypes, setEventTypes] = useState<EventType[]>([
@@ -559,8 +562,24 @@ export default function Dashboard({ user }: DashboardProps) {
                       </div>
 
                       <div className="space-y-4">
+                        <Button
+                          onClick={() => setShowChannelSelector(true)}
+                          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90"
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Select Channel & Server
+                        </Button>
+
+                        {selectedChannel.channelId && (
+                          <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <p className="text-sm text-blue-400">
+                              ✓ Selected: <strong>#{selectedChannel.channelName}</strong>
+                            </p>
+                          </div>
+                        )}
+
                         <div className="space-y-2">
-                          <Label htmlFor="webhook" className="text-gray-300">Webhook URL</Label>
+                          <Label htmlFor="webhook" className="text-gray-300">Webhook URL (Auto-generated)</Label>
                           <Input
                             id="webhook"
                             type="password"
@@ -718,6 +737,19 @@ export default function Dashboard({ user }: DashboardProps) {
           </motion.div>
         </motion.div>
       </main>
+
+      <AnimatePresence>
+        {showChannelSelector && (
+          <DiscordChannelSelector
+            onSelect={(serverId, channelId, channelName) => {
+              setSelectedChannel({ serverId, channelId, channelName })
+              setShowChannelSelector(false)
+            }}
+            onClose={() => setShowChannelSelector(false)}
+            loading={savingWebhook}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

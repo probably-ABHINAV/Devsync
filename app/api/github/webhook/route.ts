@@ -559,31 +559,80 @@ export async function POST(request: NextRequest) {
       activityType = "watch"
     }
 
+    // Store webhook event (for repo owner) - ALWAYS do this for debugging
+    if (repoOwnerUserId) {
+      try {
+        await supabase.from('webhooks').insert({
+          user_id: repoOwnerUserId,
+          repo_name: event.repository?.name || 'unknown',
+          event_type: eventType || event.action || 'unknown',
+          payload: event,
+        })
+        console.log(`✓ Webhook stored: ${eventType} for user ${repoOwnerUserId}`)
+      } catch (dbError) {
+        console.warn(`⚠ Could not store webhook:`, dbError)
+      }
+    } else {
+      console.warn(`⚠ Repo owner not found in database: ${repoOwner}`)
+    }
+
     // Send to Discord if configured
     if (message && webhookUrl) {
-      await sendDiscordMessage(webhookUrl, message, title, {
-        color: embedColor,
-        url: embedUrl || undefined,
-        author: embedAuthor,
-        footer: embedFooter,
-        fields: embedFields.length > 0 ? embedFields : undefined,
-      })
+      try {
+        console.log(`📤 Sending Discord notification to ${webhookUrl.substring(0, 50)}...`)
+        await sendDiscordMessage(webhookUrl, message, title, {
+          color: embedColor,
+          url: embedUrl || undefined,
+          author: embedAuthor,
+          footer: embedFooter,
+          fields: embedFields.length > 0 ? embedFields : undefined,
+        })
+        console.log(`✅ Discord message sent successfully`)
+      } catch (discordError) {
+        console.error(`❌ Discord send failed:`, discordError)
+      }
+    } else {
+      console.warn(`⚠ No message or webhookUrl configured. Message: "${message}", WebhookUrl: ${webhookUrl ? 'found' : 'NOT FOUND'}`)
     }
 
-    // Store webhook event (for repo owner)
-    if (repoOwnerUserId) {
-      await supabase.from('webhooks').insert({
-        user_id: repoOwnerUserId,
-        repo_name: event.repository?.name || 'unknown',
-        event_type: eventType || event.action || 'unknown',
-        payload: event,
-      })
+    // Log activity for contributor (even if Discord fails)
+    if (contributorUserId && activityType) {
+      try {
+        await supabase.from('activities').insert({
+          user_id: contributorUserId,
+          activity_type: activityType,
+          repo_name: event.repository?.name || 'unknown',
+          title: title || message,
+          description: message || title,
+          metadata: {
+            url: embedUrl,
+            event_type: eventType,
+            action: event.action,
+          }
+        })
+        console.log(`✓ Activity logged for user ${contributorUserId}`)
+      } catch (activityError) {
+        console.warn(`⚠ Could not log activity:`, activityError)
+      }
     }
 
-    return Response.json({ success: true })
+    return Response.json({ 
+      success: true,
+      debug: {
+        repoOwner,
+        repoOwnerUserId,
+        webhookUrlFound: !!webhookUrl,
+        messageSent: !!(message && webhookUrl),
+        eventType,
+        discordSent: !!webhookUrl
+      }
+    })
   } catch (error) {
     console.error("Webhook error:", error)
-    return Response.json({ success: true }) // Return success to prevent retries
+    return Response.json({ 
+      success: true,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }) // Return success to prevent retries
   }
 }
 
