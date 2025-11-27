@@ -230,6 +230,66 @@ export const DISCORD_COMMANDS = [
       },
     ],
   },
+  {
+    name: 'health-check',
+    description: 'Check system health and status',
+    type: 1,
+  },
+  {
+    name: 'alert-config',
+    description: 'Configure alert preferences and thresholds',
+    type: 1,
+    options: [
+      {
+        name: 'threshold',
+        description: 'Alert threshold type',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Critical', value: 'critical' },
+          { name: 'High', value: 'high' },
+          { name: 'Medium', value: 'medium' },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'recent-activity',
+    description: 'Show recent activity across all repositories',
+    type: 1,
+    options: [
+      {
+        name: 'limit',
+        description: 'Number of activities to show (max 20)',
+        type: 4,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'pr-insights',
+    description: 'Get insights about pull request metrics and trends',
+    type: 1,
+    options: [
+      {
+        name: 'repo',
+        description: 'Repository name (owner/repo)',
+        type: 3,
+        required: false,
+      },
+      {
+        name: 'period',
+        description: 'Time period to analyze',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'Last 7 days', value: '7d' },
+          { name: 'Last 30 days', value: '30d' },
+          { name: 'Last 90 days', value: '90d' },
+        ],
+      },
+    ],
+  },
 ]
 
 export async function registerDiscordCommands() {

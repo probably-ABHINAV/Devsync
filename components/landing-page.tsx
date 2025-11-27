@@ -197,7 +197,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            onClick={() => window.location.href = "/api/auth/github"}
+            onClick={() => window.open("/api/auth/github", "_blank")}
             className="px-6 py-2.5 sm:px-8 sm:py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-white font-semibold text-sm sm:text-base hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             Get Started Free
@@ -254,7 +254,7 @@ export default function LandingPage() {
           {/* Primary CTA Buttons */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center pt-4 sm:pt-6 px-4">
             <button 
-              onClick={() => window.location.href = "/api/auth/github"}
+              onClick={() => window.open("/api/auth/github", "_blank")}
               className="group relative px-8 py-4 sm:py-4 rounded-lg overflow-hidden font-semibold text-base sm:text-lg transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-95 cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-100" />
