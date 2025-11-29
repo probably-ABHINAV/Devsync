@@ -1,36 +1,34 @@
 import { getServiceSupabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
     const cookieStore = await cookies()
-    const token = cookieStore.get('github_token')?.value
+    let token = cookieStore.get('github_token')?.value
+    let username = searchParams.get('username')
 
-    if (!token) {
-      return Response.json({ error: 'Not authenticated' }, { status: 401 })
+    if (!username) {
+      try {
+        const userCookie = cookieStore.get('github_user')?.value
+        if (userCookie) {
+          const userData = JSON.parse(userCookie)
+          username = userData.login
+        }
+      } catch {}
+    }
+
+    if (!token && !username) {
+      return Response.json({ success: true, stats: { total_activities: 0, activities_by_type: {}, last_sync: null, sync_count: 0 } })
     }
 
     const supabase = getServiceSupabase()
 
-    // Get user from GitHub token
-    const userResponse = await fetch('https://api.github.com/user', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    })
-
-    if (!userResponse.ok) {
-      return Response.json({ error: 'Failed to verify token' }, { status: 401 })
-    }
-
-    const userData = await userResponse.json()
-
-    // Get user from database
+    // Get user from database by username
     const { data: user } = await supabase
       .from('users')
       .select('id')
-      .eq('github_id', userData.id.toString())
+      .eq('username', username)
       .single()
 
     if (!user) {

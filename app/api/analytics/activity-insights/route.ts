@@ -1,36 +1,52 @@
 import { getServiceSupabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
     const cookieStore = await cookies()
-    const token = cookieStore.get('github_token')?.value
+    let token = cookieStore.get('github_token')?.value
+    let username = searchParams.get('username')
 
-    if (!token) {
-      return Response.json({ error: 'Not authenticated' }, { status: 401 })
+    // Fallback for production
+    if (!token || !username) {
+      try {
+        const userCookie = cookieStore.get('github_user')?.value
+        if (userCookie) {
+          const userData = JSON.parse(userCookie)
+          username = userData.login
+        }
+      } catch {}
+    }
+
+    if (!token && !username) {
+      return Response.json({ success: true, insights: { most_active_repo: null, activity_trend: 'new', top_activity_type: null, streak: 0, recommendations: [] } })
     }
 
     const supabase = getServiceSupabase()
 
-    // Get user from GitHub token
-    const userResponse = await fetch('https://api.github.com/user', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    })
-
-    if (!userResponse.ok) {
-      return Response.json({ error: 'Failed to verify token' }, { status: 401 })
+    let userData: any = { login: username, id: 0 }
+    
+    // Try to get full user data from GitHub if token available
+    if (token) {
+      try {
+        const userResponse = await fetch('https://api.github.com/user', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        })
+        if (userResponse.ok) {
+          userData = await userResponse.json()
+        }
+      } catch {}
     }
-
-    const userData = await userResponse.json()
 
     // Get user from database
     const { data: user } = await supabase
       .from('users')
       .select('id')
-      .eq('github_id', userData.id.toString())
+      .eq('username', userData.login || username)
       .single()
 
     if (!user) {

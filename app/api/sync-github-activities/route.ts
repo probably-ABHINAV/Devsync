@@ -96,14 +96,28 @@ function mapGitHubEventToActivity(event: GitHubActivity) {
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies()
-    const token = cookieStore.get("github_token")?.value
-    const userCookie = cookieStore.get("github_user")?.value
+    let token = cookieStore.get("github_token")?.value
+    let userCookie = cookieStore.get("github_user")?.value
+
+    // Fallback: try to get from request body for production reliability
+    if (!token || !userCookie) {
+      try {
+        const body = await request.json().catch(() => ({}))
+        token = body.token || token
+        userCookie = typeof body.user === 'string' ? body.user : (body.user ? JSON.stringify(body.user) : userCookie)
+      } catch {}
+    }
 
     if (!token || !userCookie) {
       return Response.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const userData = JSON.parse(userCookie)
+    let userData
+    try {
+      userData = typeof userCookie === 'string' ? JSON.parse(userCookie) : userCookie
+    } catch {
+      return Response.json({ error: "Invalid user data" }, { status: 401 })
+    }
     const supabase = getServiceSupabase()
 
     // Get or create user in database

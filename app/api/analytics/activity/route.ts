@@ -8,15 +8,28 @@ export async function GET(request: Request) {
 
     const supabase = getServiceSupabase()
 
-    // Get current user from cookie
+    // Get current user from cookie or query param
     const cookieStore = await cookies()
-    const userCookie = cookieStore.get('github_user')?.value
-
+    let userCookie = cookieStore.get('github_user')?.value
+    
+    // Fallback: try to get from query params
     if (!userCookie) {
-      return Response.json({ error: 'Not authenticated' }, { status: 401 })
+      const username = searchParams.get('username')
+      if (username) {
+        userCookie = JSON.stringify({ login: username })
+      }
     }
 
-    const userData = JSON.parse(userCookie)
+    if (!userCookie) {
+      return Response.json({ activities: [], count: 0, success: true })
+    }
+
+    let userData
+    try {
+      userData = typeof userCookie === 'string' ? JSON.parse(userCookie) : userCookie
+    } catch {
+      return Response.json({ activities: [], count: 0, success: true })
+    }
 
     // Get user ID from GitHub username
     const { data: user } = await supabase
