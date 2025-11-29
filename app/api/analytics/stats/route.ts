@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     // Get activity stats
     const { data: activities } = await supabase
       .from('activities')
-      .select('event_type, created_at')
+      .select('activity_type, created_at')
       .eq('user_id', user.id)
 
     if (!activities) {
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     let lastSync: string | null = null
 
     activities.forEach(act => {
-      activities_by_type[act.event_type] = (activities_by_type[act.event_type] || 0) + 1
+      activities_by_type[act.activity_type] = (activities_by_type[act.activity_type] || 0) + 1
       if (!lastSync || new Date(act.created_at) > new Date(lastSync)) {
         lastSync = act.created_at
       }
