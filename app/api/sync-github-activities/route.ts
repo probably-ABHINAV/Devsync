@@ -175,7 +175,14 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.from("activities").insert(
       activitiesToStore.map((activity) => ({
         user_id: userId,
-        ...activity,
+        event_type: activity.activity_type, // Map activity_type to event_type for database
+        repo_name: activity.repo_name,
+        pr_number: activity.pr_number || null,
+        issue_number: activity.issue_number || null,
+        title: activity.title,
+        description: activity.description || null,
+        metadata: activity.metadata,
+        created_at: activity.created_at,
       }))
     )
 

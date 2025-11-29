@@ -76,15 +76,13 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Webhook test failed. Please verify the URL is correct." }, { status: 400 })
     }
 
-    // Store the webhook URL and event types in database
+    // Store the webhook URL in database
     try {
       const { error: upsertError } = await supabase
         .from('discord_configs')
         .upsert({
           user_id: user.id,
           webhook_url: webhookUrl,
-          event_types: enabledEvents,
-          enabled: true,
         }, {
           onConflict: 'user_id'
         })

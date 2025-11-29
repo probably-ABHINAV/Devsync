@@ -410,7 +410,26 @@ export default function Dashboard({ user }: DashboardProps) {
   useEffect(() => {
     loadRepos()
     checkDiscordStatus()
+    loadAnalytics()
   }, [])
+
+  const loadAnalytics = async () => {
+    try {
+      const username = user.login
+      // Load insights and stats in parallel
+      const [insightsRes, statsRes] = await Promise.all([
+        fetch(`/api/analytics/activity-insights?username=${username}`),
+        fetch(`/api/analytics/stats?username=${username}`)
+      ])
+      if (insightsRes.ok && statsRes.ok) {
+        const insights = await insightsRes.json()
+        const stats = await statsRes.json()
+        console.log('Analytics loaded:', { insights, stats })
+      }
+    } catch (error) {
+      console.error('Failed to load analytics:', error)
+    }
+  }
 
   const loadRepos = async () => {
     try {
