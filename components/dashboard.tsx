@@ -218,7 +218,7 @@ function AnimatedStatCard({ stat, idx, inView }: {
   inView: boolean 
 }) {
   const isNumber = typeof stat.value === 'number'
-  const count = useCounter(isNumber ? stat.value : 0, 2000, inView)
+  const count = useCounter(isNumber ? (stat.value as number) : 0, 2000, inView)
   
   return (
     <motion.div
@@ -384,6 +384,8 @@ export default function Dashboard({ user }: DashboardProps) {
   const [repos, setRepos] = useState<Repo[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMessage, setSyncMessage] = useState("")
   const [discordConnected, setDiscordConnected] = useState(false)
   const [webhookUrl, setWebhookUrl] = useState("")
   const [savingWebhook, setSavingWebhook] = useState(false)
@@ -433,6 +435,28 @@ export default function Dashboard({ user }: DashboardProps) {
       ])
     } finally {
       setTimeout(() => setRefreshing(false), 500)
+    }
+  }
+
+  const handleSyncActivities = async () => {
+    setSyncing(true)
+    setSyncMessage("")
+    try {
+      const response = await fetch("/api/sync-github-activities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setSyncMessage(`✅ Synced ${data.synced} activities from GitHub`)
+        setTimeout(() => activityFeedRef.current?.refresh(), 500)
+      } else {
+        setSyncMessage(`❌ ${data.error || "Sync failed"}`)
+      }
+    } catch (error) {
+      setSyncMessage("❌ Error syncing activities")
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -1031,23 +1055,46 @@ export default function Dashboard({ user }: DashboardProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      <motion.div
-                        animate={{ 
-                          boxShadow: [
-                            "0 0 20px rgba(139, 92, 246, 0.3)",
-                            "0 0 40px rgba(139, 92, 246, 0.5)",
-                            "0 0 20px rgba(139, 92, 246, 0.3)",
-                          ],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20"
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-3">
+                        <motion.div
+                          animate={{ 
+                            boxShadow: [
+                              "0 0 20px rgba(139, 92, 246, 0.3)",
+                              "0 0 40px rgba(139, 92, 246, 0.5)",
+                              "0 0 20px rgba(139, 92, 246, 0.3)",
+                            ],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20"
+                        >
+                          <Activity className="w-5 h-5 text-purple-400" />
+                        </motion.div>
+                        <h2 className="text-2xl font-bold text-white">Activity Timeline</h2>
+                      </div>
+                      <motion.button
+                        onClick={handleSyncActivities}
+                        disabled={syncing}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                       >
-                        <Activity className="w-5 h-5 text-purple-400" />
-                      </motion.div>
-                      <h2 className="text-2xl font-bold text-white">Activity Timeline</h2>
+                        <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+                        {syncing ? "Syncing..." : "Sync Activities"}
+                      </motion.button>
                     </div>
-                    <p className="text-gray-400 text-sm mt-1">Track your recent contributions and events</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-400 text-sm mt-1">Track your recent contributions and events</p>
+                      {syncMessage && (
+                        <motion.p 
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="text-sm text-cyan-400"
+                        >
+                          {syncMessage}
+                        </motion.p>
+                      )}
+                    </div>
                   </motion.div>
                   <ActivityFeed ref={activityFeedRef} />
                 </TabsContent>

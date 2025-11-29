@@ -26,10 +26,10 @@ export async function GET(request: Request) {
       .single()
 
     if (!user) {
-      return Response.json({ error: 'User not found' }, { status: 404 })
+      return Response.json({ error: 'User not found in database' }, { status: 404 })
     }
 
-    // Fetch recent activities
+    // Fetch recent activities from Supabase
     const { data: activities, error } = await supabase
       .from('activities')
       .select('*')
@@ -38,14 +38,15 @@ export async function GET(request: Request) {
       .limit(limit)
 
     if (error) {
-      throw error
+      console.error('Supabase activities error:', error)
+      return Response.json({ error: 'Failed to fetch activities from database' }, { status: 500 })
     }
 
-    return Response.json({ success: true, activities })
+    return Response.json({ success: true, activities: activities || [], count: activities?.length || 0 })
   } catch (error) {
     console.error('Activity feed error:', error)
     return Response.json(
-      { error: 'Failed to fetch activities' },
+      { error: 'Failed to fetch activities', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

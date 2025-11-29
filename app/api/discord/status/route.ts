@@ -10,7 +10,8 @@ export async function GET() {
       return Response.json({
         connected: false,
         webhookUrl: null,
-      })
+        error: "Not authenticated"
+      }, { status: 401 })
     }
 
     // Get user data from token
@@ -25,7 +26,8 @@ export async function GET() {
       return Response.json({
         connected: false,
         webhookUrl: null,
-      })
+        error: "Failed to verify GitHub token"
+      }, { status: 401 })
     }
 
     const userData = await userResponse.json()
@@ -42,7 +44,8 @@ export async function GET() {
       return Response.json({
         connected: false,
         webhookUrl: null,
-      })
+        error: "User not found in database"
+      }, { status: 404 })
     }
 
     // Get Discord webhook from database
@@ -63,6 +66,7 @@ export async function GET() {
     return Response.json({
       connected: false,
       webhookUrl: null,
-    })
+      error: error instanceof Error ? error.message : "Error checking Discord status"
+    }, { status: 500 })
   }
 }
