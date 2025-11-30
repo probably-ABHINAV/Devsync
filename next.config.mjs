@@ -11,9 +11,14 @@ const nextConfig = {
     '*.replit.dev',
     '*.repl.co',
     '*.pike.replit.dev',
+    '*.sisko.replit.dev',
     '*.vercel.app',
+    'localhost',
     'localhost:5000',
-    '127.0.0.1:5000'
+    '127.0.0.1',
+    '127.0.0.1:5000',
+    '0.0.0.0',
+    '0.0.0.0:5000'
   ],
   experimental: {
     serverActions: {

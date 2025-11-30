@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     const activitiesToInsert = activities.map((activity) => ({
       user_id: userId,
       repo_name: activity.repo_name,
-      event_type: activity.activity_type,
       activity_type: activity.activity_type,
       pr_number: activity.pr_number || null,
       issue_number: activity.issue_number || null,
