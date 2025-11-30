@@ -171,8 +171,8 @@ export async function POST(request: Request) {
       return Response.json({ success: true, synced: 0, message: "No mappable activities found" })
     }
 
-    // Store activities in Supabase
-    const { data, error } = await supabase.from("activities").insert(
+    // Store activities in Supabase (upsert to handle duplicates)
+    const { data, error } = await supabase.from("activities").upsert(
       activitiesToStore.map((activity) => ({
         user_id: userId,
         activity_type: activity.activity_type,
@@ -183,7 +183,8 @@ export async function POST(request: Request) {
         description: activity.description || null,
         metadata: activity.metadata,
         created_at: activity.created_at,
-      }))
+      })),
+      { onConflict: "user_id,created_at,activity_type" }
     )
 
     if (error) {
