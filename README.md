@@ -228,22 +228,49 @@ You should see a test message in your Discord channel confirming the connection 
 
 ### Option A: Vercel (Recommended - 5 min)
 
+**Step 1: Deploy to Vercel**
 ```bash
 # 1. Push to GitHub
 git push origin main
 
-# 2. Go to vercel.com
+# 2. Go to https://vercel.com/new
 # 3. Import your GitHub repo
-# 4. Add environment variables (see Step 2 below)
-# 5. Deploy!
-
-# 6. Update GitHub Webhook URL
-# Settings > Webhooks > Edit
-# Payload URL: https://yourvercelapp.com/api/github/webhook
+# 4. Vercel will auto-detect Next.js settings
+# 5. Click "Deploy" (deployment will fail initially - this is expected)
 ```
 
-**Environment Variables in Vercel:**
-Add all variables from the `.env.local` file in your Vercel project settings.
+**Step 2: Add Environment Variables**
+1. After deployment fails, go to your Vercel project dashboard
+2. Click **Settings** → **Environment Variables**
+3. Add each variable from your `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_value
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_value
+SUPABASE_SERVICE_ROLE_KEY=your_value
+GITHUB_CLIENT_ID=your_value
+GITHUB_CLIENT_SECRET=your_value
+GITHUB_TOKEN=your_value
+GITHUB_WEBHOOK_SECRET=your_value
+GEMINI_API_KEY=your_value
+DISCORD_CLIENT_ID=your_value
+DISCORD_CLIENT_SECRET=your_value
+DISCORD_TOKEN=your_value
+DISCORD_PUBLIC_KEY=your_value
+NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
+```
+
+**Step 3: Redeploy**
+1. Go to **Deployments** tab
+2. Click the three dots on the failed deployment
+3. Click **Redeploy**
+4. Wait for deployment to complete ✓
+
+**Step 4: Update Callbacks**
+1. GitHub Settings → Developer settings → OAuth Apps
+   - Update Callback URL: `https://your-project.vercel.app/api/auth/callback`
+2. GitHub Webhooks
+   - Update Payload URL: `https://your-project.vercel.app/api/github/webhook`
 
 **Cost**: Free (or $20/month Pro)
 

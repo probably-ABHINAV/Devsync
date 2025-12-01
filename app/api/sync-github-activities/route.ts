@@ -1,4 +1,5 @@
 import { getServiceSupabase } from "@/lib/supabase"
+import { XP_REWARDS, calculateLevel, checkAndAwardBadges } from "@/lib/gamification"
 import { cookies } from "next/headers"
 
 interface GitHubActivity {
@@ -171,8 +172,8 @@ export async function POST(request: Request) {
       return Response.json({ success: true, synced: 0, message: "No mappable activities found" })
     }
 
-    // Store activities in Supabase (upsert to handle duplicates)
-    const { data, error } = await supabase.from("activities").upsert(
+    // Store activities in Supabase
+    const { error } = await supabase.from("activities").insert(
       activitiesToStore.map((activity) => ({
         user_id: userId,
         activity_type: activity.activity_type,
@@ -183,8 +184,7 @@ export async function POST(request: Request) {
         description: activity.description || null,
         metadata: activity.metadata,
         created_at: activity.created_at,
-      })),
-      { onConflict: "user_id,created_at,activity_type" }
+      }))
     )
 
     if (error) {
@@ -192,10 +192,67 @@ export async function POST(request: Request) {
       return Response.json({ error: "Failed to store activities", details: error.message }, { status: 500 })
     }
 
+    // Calculate XP from activities
+    let totalXP = 0
+    for (const activity of activitiesToStore) {
+      switch (activity.activity_type) {
+        case 'pr_opened':
+          totalXP += XP_REWARDS.PR_OPENED
+          break
+        case 'pr_merged':
+          totalXP += XP_REWARDS.PR_MERGED
+          break
+        case 'code_review':
+        case 'pr_reviewed':
+          totalXP += XP_REWARDS.PR_REVIEWED
+          break
+        case 'issue_opened':
+        case 'issue_created':
+          totalXP += XP_REWARDS.ISSUE_CREATED
+          break
+        case 'issue_closed':
+          totalXP += XP_REWARDS.ISSUE_CLOSED
+          break
+        case 'commit':
+          totalXP += XP_REWARDS.COMMIT
+          break
+      }
+    }
+
+    // Update user stats with XP
+    if (totalXP > 0) {
+      const { data: existingStats } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (existingStats) {
+        const newXP = existingStats.xp + totalXP
+        await supabase
+          .from('user_stats')
+          .update({
+            xp: newXP,
+            level: calculateLevel(newXP),
+          })
+          .eq('user_id', userId)
+      } else {
+        await supabase.from('user_stats').insert({
+          user_id: userId,
+          xp: totalXP,
+          level: calculateLevel(totalXP),
+        })
+      }
+
+      // Check and award badges
+      await checkAndAwardBadges(userId)
+    }
+
     return Response.json({
       success: true,
       synced: activitiesToStore.length,
       message: `Synced ${activitiesToStore.length} activities from GitHub`,
+      xpAwarded: totalXP,
     })
   } catch (error) {
     console.error("Sync error:", error)
