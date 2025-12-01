@@ -71,7 +71,7 @@ export async function awardXP(
   await checkAndAwardBadges(userId)
 }
 
-async function checkAndAwardBadges(userId: string): Promise<void> {
+export async function checkAndAwardBadges(userId: string): Promise<void> {
   const supabase = getServiceSupabase()
 
   // Get user stats

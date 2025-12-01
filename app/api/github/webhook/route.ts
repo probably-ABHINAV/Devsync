@@ -31,24 +31,38 @@ export async function POST(request: NextRequest) {
     let webhookUrl: string | null = null
 
     if (repoOwner) {
-      const { data: ownerUser } = await supabase
+      console.log(`🔍 Looking for repo owner: ${repoOwner}`)
+      
+      const { data: ownerUser, error: userError } = await supabase
         .from('users')
         .select('id')
         .eq('username', repoOwner)
         .single()
       
+      if (userError) {
+        console.warn(`⚠ User lookup error for ${repoOwner}:`, userError.message)
+      }
+      
       repoOwnerUserId = ownerUser?.id || null
+      console.log(`✓ Repo owner user ID: ${repoOwnerUserId || 'NOT FOUND'}`)
 
       // Get Discord webhook URL from repository owner's config
       if (repoOwnerUserId) {
-        const { data: discordConfig } = await supabase
+        const { data: discordConfig, error: configError } = await supabase
           .from('discord_configs')
           .select('webhook_url')
           .eq('user_id', repoOwnerUserId)
           .single()
         
+        if (configError) {
+          console.warn(`⚠ Discord config lookup error for user ${repoOwnerUserId}:`, configError.message)
+        }
+        
         webhookUrl = discordConfig?.webhook_url || null
+        console.log(`✓ Discord webhook URL ${webhookUrl ? 'found' : 'NOT configured'} for user ${repoOwnerUserId}`)
       }
+    } else {
+      console.warn(`⚠ No repo owner found in GitHub event`)
     }
 
     // Get contributor's user ID (who triggered the event) - for XP and activity tracking
@@ -121,44 +135,58 @@ export async function POST(request: NextRequest) {
 
       // Generate AI summary
       try {
-        const diff = await fetchPRDiff(event.pull_request.diff_url)
-        const summary = await summarizePR(
-          event.pull_request.title,
-          event.pull_request.body || '',
-          diff,
-          event.pull_request.changed_files || 0
-        )
-
-        // Store summary in database
-        await supabase.from('pr_summaries').insert({
-          pr_number: event.pull_request.number,
-          repo_name: event.repository.full_name,
-          summary: summary.summary,
-          key_changes: summary.keyChanges,
-          risks: summary.risks,
-          recommendations: summary.recommendations,
-          complexity: summary.complexity,
-        })
-
-        // Enhanced message with AI summary
-        const complexityEmoji = summary.complexity === 'low' ? '🟢' : summary.complexity === 'high' ? '🔴' : '🟡'
-        message = `**${event.pull_request.title}**\n\n**🤖 AI Summary:**\n${summary.summary}`
+        console.log(`🤖 Starting AI summary for PR #${event.pull_request.number}...`)
         
-        embedFields.push(
-          { name: "Complexity", value: `${complexityEmoji} ${summary.complexity.toUpperCase()}`, inline: true },
-          { name: "Key Changes", value: summary.keyChanges.slice(0, 3).map(c => `• ${truncateText(c, 100)}`).join('\n') || 'None', inline: false }
-        )
-        
-        if (summary.risks.length > 0) {
-          embedFields.push({
-            name: "⚠️ Risks",
-            value: summary.risks.slice(0, 3).map(r => `• ${truncateText(r, 100)}`).join('\n'),
-            inline: false
-          })
-          embedColor = DISCORD_COLORS.WARNING
+        if (!process.env.GEMINI_API_KEY) {
+          console.warn('⚠️  GEMINI_API_KEY not configured - skipping AI summary')
+        } else {
+          const diff = await fetchPRDiff(event.pull_request.diff_url)
+          
+          if (!diff || diff.trim() === '') {
+            console.warn('⚠️  PR diff is empty - skipping AI summary')
+          } else {
+            const summary = await summarizePR(
+              event.pull_request.title,
+              event.pull_request.body || '',
+              diff,
+              event.pull_request.changed_files || 0
+            )
+
+            // Store summary in database
+            await supabase.from('pr_summaries').insert({
+              pr_number: event.pull_request.number,
+              repo_name: event.repository.full_name,
+              summary: summary.summary,
+              key_changes: summary.keyChanges,
+              risks: summary.risks,
+              recommendations: summary.recommendations,
+              complexity: summary.complexity,
+            })
+
+            // Enhanced message with AI summary
+            const complexityEmoji = summary.complexity === 'low' ? '🟢' : summary.complexity === 'high' ? '🔴' : '🟡'
+            message = `**${event.pull_request.title}**\n\n**🤖 AI Summary:**\n${summary.summary}`
+            
+            embedFields.push(
+              { name: "Complexity", value: `${complexityEmoji} ${summary.complexity.toUpperCase()}`, inline: true },
+              { name: "Key Changes", value: summary.keyChanges.slice(0, 3).map(c => `• ${truncateText(c, 100)}`).join('\n') || 'None', inline: false }
+            )
+            
+            if (summary.risks.length > 0) {
+              embedFields.push({
+                name: "⚠️ Risks",
+                value: summary.risks.slice(0, 3).map(r => `• ${truncateText(r, 100)}`).join('\n'),
+                inline: false
+              })
+              embedColor = DISCORD_COLORS.WARNING
+            }
+            
+            console.log(`✅ AI summary generated successfully for PR #${event.pull_request.number}`)
+          }
         }
       } catch (aiError) {
-        console.error('AI summary failed:', aiError)
+        const errorMsg = aiError instanceof Error ? aiError.message : String(aiError)
+        console.error(`❌ AI summary failed for PR #${event.pull_request.number}: ${errorMsg}`)
       }
 
       // Log activity for contributor
@@ -638,6 +666,8 @@ export async function POST(request: NextRequest) {
 
 async function fetchPRDiff(diffUrl: string): Promise<string> {
   try {
+    console.log(`📄 Fetching PR diff from: ${diffUrl.substring(0, 80)}...`)
+    
     const token = process.env.GITHUB_TOKEN || process.env.GITHUB_CLIENT_SECRET
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github.v3.diff',
@@ -645,15 +675,22 @@ async function fetchPRDiff(diffUrl: string): Promise<string> {
     
     if (token) {
       headers['Authorization'] = `token ${token}`
+    } else {
+      console.warn('⚠️  No GitHub token available for diff fetch')
     }
 
     const response = await fetch(diffUrl, { headers })
     if (!response.ok) {
-      throw new Error('Failed to fetch diff')
+      console.error(`❌ Failed to fetch diff: ${response.status} ${response.statusText}`)
+      throw new Error(`Failed to fetch diff: ${response.statusText}`)
     }
-    return await response.text()
+    
+    const diff = await response.text()
+    console.log(`✅ Diff fetched successfully (${diff.length} bytes)`)
+    return diff
   } catch (error) {
-    console.error('Error fetching PR diff:', error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(`❌ Error fetching PR diff: ${errorMsg}`)
     return ''
   }
 }

@@ -516,7 +516,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            onClick={() => window.location.href = "/api/auth/github"}
+            onClick={() => window.open("/api/auth/github", "_blank")}
             className="relative group px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl font-semibold text-sm sm:text-base overflow-hidden cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -656,7 +656,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center pt-6 px-4">
             <motion.button 
-              onClick={() => window.location.href = "/api/auth/github"}
+              onClick={() => window.open("/api/auth/github", "_blank")}
               className="group relative px-10 py-4 rounded-2xl overflow-hidden font-semibold text-lg transition-all cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -1292,7 +1292,7 @@ export default function LandingPage() {
             </p>
             
             <motion.button 
-              onClick={() => window.location.href = "/api/auth/github"}
+              onClick={() => window.open("/api/auth/github", "_blank")}
               className="group relative px-12 py-5 rounded-2xl overflow-hidden font-semibold text-lg cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

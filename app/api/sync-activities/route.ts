@@ -1,5 +1,6 @@
 import { fetchUserActivities } from "@/lib/fetch-github-activities"
 import { getServiceSupabase } from "@/lib/supabase"
+import { XP_REWARDS, calculateLevel, checkAndAwardBadges } from "@/lib/gamification"
 import type { NextRequest } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -16,12 +17,12 @@ export async function POST(request: NextRequest) {
     // Fetch activities from GitHub
     const activities = await fetchUserActivities(githubToken, username)
 
-    if (activities.length === 0) {
-      return Response.json({ success: true, activities: [] })
-    }
-
     // Store in Supabase
     const supabase = getServiceSupabase()
+
+    if (activities.length === 0) {
+      return Response.json({ success: true, activities: [], xpAwarded: 0 })
+    }
 
     // First, try to delete old activities for this user to avoid duplicates
     await supabase.from("activities").delete().eq("user_id", userId)
@@ -50,7 +51,93 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    return Response.json({ success: true, count: activitiesToInsert.length })
+    // Calculate XP from activities and update user_stats
+    let totalXP = 0
+    let prsOpened = 0
+    let prsMerged = 0
+    let prsReviewed = 0
+    let issuesCreated = 0
+    let issuesClosed = 0
+    let commitsCount = 0
+
+    for (const activity of activities) {
+      switch (activity.activity_type) {
+        case 'pr_opened':
+          totalXP += XP_REWARDS.PR_OPENED
+          prsOpened++
+          break
+        case 'pr_merged':
+          totalXP += XP_REWARDS.PR_MERGED
+          prsMerged++
+          break
+        case 'pr_reviewed':
+        case 'review':
+          totalXP += XP_REWARDS.PR_REVIEWED
+          prsReviewed++
+          break
+        case 'issue_created':
+        case 'issue_opened':
+          totalXP += XP_REWARDS.ISSUE_CREATED
+          issuesCreated++
+          break
+        case 'issue_closed':
+          totalXP += XP_REWARDS.ISSUE_CLOSED
+          issuesClosed++
+          break
+        case 'commit':
+        case 'push':
+          totalXP += XP_REWARDS.COMMIT
+          commitsCount++
+          break
+      }
+    }
+
+    // Update user_stats with calculated values
+    if (totalXP > 0) {
+      const { data: existingStats } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (existingStats) {
+        const newXP = existingStats.xp + totalXP
+        await supabase
+          .from('user_stats')
+          .update({
+            xp: newXP,
+            level: calculateLevel(newXP),
+            prs_opened: existingStats.prs_opened + prsOpened,
+            prs_merged: existingStats.prs_merged + prsMerged,
+            prs_reviewed: existingStats.prs_reviewed + prsReviewed,
+            issues_created: existingStats.issues_created + issuesCreated,
+            issues_closed: existingStats.issues_closed + issuesClosed,
+            commits_count: existingStats.commits_count + commitsCount,
+          })
+          .eq('user_id', userId)
+      } else {
+        await supabase.from('user_stats').insert({
+          user_id: userId,
+          xp: totalXP,
+          level: calculateLevel(totalXP),
+          prs_opened: prsOpened,
+          prs_merged: prsMerged,
+          prs_reviewed: prsReviewed,
+          issues_created: issuesCreated,
+          issues_closed: issuesClosed,
+          commits_count: commitsCount,
+        })
+      }
+
+      // Check and award badges based on new stats
+      await checkAndAwardBadges(userId)
+    }
+
+    return Response.json({ 
+      success: true, 
+      count: activitiesToInsert.length,
+      xpAwarded: totalXP
+    })
   } catch (error) {
     console.error("Sync activities error:", error)
     return Response.json({ error: "Failed to sync activities" }, { status: 500 })

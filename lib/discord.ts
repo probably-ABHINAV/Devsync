@@ -82,14 +82,26 @@ export async function sendDiscordMessage(
     payload = { embeds: [embed] }
   }
 
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
 
-  if (!response.ok) throw new Error("Failed to send Discord message")
-  return response.ok
+    if (!response.ok) {
+      const errorText = await response.text()
+      const errorMsg = `Discord API error ${response.status}: ${errorText}`
+      console.error(`❌ ${errorMsg}`)
+      throw new Error(errorMsg)
+    }
+    
+    console.log(`✅ Discord webhook delivered successfully`)
+    return response.ok
+  } catch (error) {
+    console.error(`❌ Failed to send Discord message:`, error)
+    throw error
+  }
 }
 
 export function validateDiscordWebhook(url: string): boolean {

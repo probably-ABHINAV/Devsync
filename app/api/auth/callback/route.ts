@@ -63,8 +63,29 @@ export async function GET(request: NextRequest) {
       .eq('github_id', userData.id.toString())
       .single()
 
-    // Sync GitHub activities to database
+    // Create initial user_stats if they don't exist
     if (userRecord?.id) {
+      const { data: existingStats } = await supabase
+        .from('user_stats')
+        .select('id')
+        .eq('user_id', userRecord.id)
+        .single()
+
+      if (!existingStats) {
+        await supabase.from('user_stats').insert({
+          user_id: userRecord.id,
+          xp: 10,
+          level: 1,
+          prs_opened: 0,
+          prs_merged: 0,
+          prs_reviewed: 0,
+          issues_created: 0,
+          issues_closed: 0,
+          commits_count: 0,
+        })
+      }
+
+      // Sync GitHub activities to database
       try {
         await fetch(`${baseUrl}/api/sync-activities`, {
           method: "POST",

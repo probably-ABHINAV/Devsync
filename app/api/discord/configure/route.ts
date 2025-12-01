@@ -78,26 +78,45 @@ export async function POST(request: NextRequest) {
 
     // Store the webhook URL in database
     try {
-      const { error: upsertError } = await supabase
+      console.log(`💾 Storing Discord webhook for user ${user.id}`)
+      
+      const { data: existingConfig } = await supabase
         .from('discord_configs')
-        .upsert({
-          user_id: user.id,
-          webhook_url: webhookUrl,
-        }, {
-          onConflict: 'user_id'
-        })
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
 
-      if (upsertError) {
-        console.error("Discord config upsert error:", upsertError)
-        // Don't fail if database save has issues - webhook test already passed
-        console.warn("Webhook configured in Discord but database save failed. Will retry on next check.")
+      let result
+      if (existingConfig) {
+        // Update existing config
+        result = await supabase
+          .from('discord_configs')
+          .update({ webhook_url: webhookUrl })
+          .eq('user_id', user.id)
+      } else {
+        // Insert new config
+        result = await supabase
+          .from('discord_configs')
+          .insert({
+            user_id: user.id,
+            webhook_url: webhookUrl,
+          })
       }
 
+      if (result.error) {
+        console.error("❌ Discord config save error:", result.error)
+        return Response.json({ 
+          error: "Failed to save webhook to database. Please try again." 
+        }, { status: 500 })
+      }
+
+      console.log(`✅ Discord webhook stored successfully for user ${user.id}`)
       return Response.json({ success: true, eventTypes: enabledEvents })
     } catch (dbError) {
-      console.error("Database error:", dbError)
-      // Even if DB fails, webhook was successfully sent to Discord
-      return Response.json({ success: true, eventTypes: enabledEvents, warning: "Discord configured but database sync pending" })
+      console.error("❌ Database error:", dbError)
+      return Response.json({ 
+        error: "Failed to save webhook configuration" 
+      }, { status: 500 })
     }
   } catch (error) {
     console.error("Discord configuration error:", error)

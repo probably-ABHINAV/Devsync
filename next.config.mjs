@@ -6,29 +6,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Allow all origins for Replit development AND Vercel production
-  allowedDevOrigins: [
-    '*.replit.dev',
-    '*.repl.co',
-    '*.pike.replit.dev',
-    '*.sisko.replit.dev',
-    '*.vercel.app',
-    'localhost',
-    'localhost:5000',
-    '127.0.0.1',
-    '127.0.0.1:5000',
-    '0.0.0.0',
-    '0.0.0.0:5000'
-  ],
+  // Vercel automatically handles CORS for *.vercel.app domains
+  // No need for custom allowedDevOrigins in production
   experimental: {
     serverActions: {
-      allowedOrigins: [
-        '*.replit.dev',
-        '*.repl.co',
-        '*.pike.replit.dev',
-        '*.vercel.app',
-        'localhost:5000'
-      ]
+      allowedOrigins: ['*']
     }
   },
   async headers() {

@@ -31,6 +31,9 @@ Perfect for **engineering teams** who want to:
 - **Team Analytics**: Contribution tracking, user stats, activity feeds
 - **Beautiful Dashboard**: 4-tab interface (Overview, Activity, Analytics, Settings)
 - **GitHub Integration**: OAuth login, webhook support, repository management
+- **Real-Time Sync**: One-click sync of GitHub activities with XP rewards
+- **Activity Timeline**: Beautiful animated feed of real GitHub activities
+- **Health Monitoring**: System status checks and monitoring
 
 ---
 
@@ -45,6 +48,7 @@ Perfect for **engineering teams** who want to:
 | AI | Google Gemini 1.5 |
 | Auth | GitHub OAuth 2.0 |
 | Integrations | Discord API, GitHub API |
+| Deployment | Vercel |
 
 ---
 
@@ -105,7 +109,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:5000
 
 ---
 
-## 🔧 Full Setup Guide
+## 🔧 Complete Setup Guide
 
 ### Step 1: Create Supabase Project (5 min)
 
@@ -124,9 +128,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:5000
 
 1. In Supabase, go to SQL Editor
 2. Create new query
-3. Paste entire `supabase-schema.sql` file
+3. Paste entire `migrations/supabase-schema.sql` file
 4. Click Run
 5. Done! ✓
+
+This creates all required tables:
+- `users` - Stores GitHub authenticated users
+- `activities` - Stores user activities (PRs, issues, commits)
+- `discord_configs` - Stores Discord webhook URLs
+- `user_stats` - Stores XP and gamification data
+- `badges` - Achievement badges
+- `user_badges` - User's earned badges
+- `webhooks` - GitHub webhook event logs
 
 ### Step 3: Create GitHub OAuth App (5 min)
 
@@ -160,7 +173,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:5000
 1. Go to your GitHub repository
 2. Settings > Webhooks > Add webhook
 3. Fill in the webhook configuration:
-   - **Payload URL**: `https://yourdomain.com/api/github/webhook` (or your Vercel/Replit URL)
+   - **Payload URL**: `https://yourdomain.com/api/github/webhook` (or your production URL)
    - **Content type**: `application/json`
    - **Events**: Select "Let me select individual events" and enable:
      - ✅ Push
@@ -192,11 +205,28 @@ git push origin main
 2. Click "Get API key"
 3. Copy the API key to your environment variables
 
+### Step 7: Configure Discord Integration
+
+1. Go to your Discord server
+2. Right-click on a channel where you want notifications
+3. Click **Edit Channel**
+4. Go to **Integrations** → **Webhooks**
+5. Click **New Webhook**
+6. Name it "OpsCord" (or whatever you prefer)
+7. Click **Copy Webhook URL**
+8. Go to your OpsCord Dashboard
+9. Look for **Discord Configuration** section
+10. Paste your Discord Webhook URL
+11. Select which events you want notifications for
+12. Click **Save**
+
+You should see a test message in your Discord channel confirming the connection works.
+
 ---
 
 ## 🚀 Deployment Options
 
-### Option A: Vercel (Easiest - 5 min)
+### Option A: Vercel (Recommended - 5 min)
 
 ```bash
 # 1. Push to GitHub
@@ -204,15 +234,16 @@ git push origin main
 
 # 2. Go to vercel.com
 # 3. Import your GitHub repo
-# 4. Add environment variables
+# 4. Add environment variables (see Step 2 below)
 # 5. Deploy!
 
-# 6. Set GitHub Webhook
-# Settings > Webhooks > Add webhook
+# 6. Update GitHub Webhook URL
+# Settings > Webhooks > Edit
 # Payload URL: https://yourvercelapp.com/api/github/webhook
-# Content type: application/json
-# Events: All
 ```
+
+**Environment Variables in Vercel:**
+Add all variables from the `.env.local` file in your Vercel project settings.
 
 **Cost**: Free (or $20/month Pro)
 
@@ -226,7 +257,7 @@ git push origin main
 6. Setup PM2 for process management:
    ```bash
    npm install -g pm2
-   pm2 start npm --name "opscord" -- run dev
+   pm2 start npm --name "opscord" -- run start
    pm2 startup
    pm2 save
    ```
@@ -262,46 +293,122 @@ docker run -p 5000:5000 --env-file .env.local opscord
 
 ## 🎯 Core Features Explained
 
-### 1. AI PR Summarization
-Powered by Google Gemini, automatically:
-- Summarize code changes
-- Assess complexity (Low/Medium/High)
-- Identify risks
-- Suggest reviewers
-- Recommend test coverage
+### 1. Real-Time GitHub Activity Sync
+- **Sync Button**: One-click sync of GitHub activities
+- **Auto-Mapping**: GitHub events → OpsCord activities
+  - PRs (opened, merged, reviewed)
+  - Issues (created, closed)
+  - Commits & pushes
+  - Code reviews
+- **Real-Time Storage**: All data stored in Supabase
+- **Status Feedback**: See sync progress and results
 
-### 2. Discord Integration
-Team commands:
-- `/ping` - Check bot status
-- `/summary <pr>` - Get AI PR summary
-- `/stats` - Personal contribution stats
-- `/create-issue` - Create GitHub issues from Discord
+### 2. Activity Timeline
+- **Animated Feed**: Beautiful Framer Motion animations
+- **Real Data**: Shows actual GitHub activities
+- **Live Updates**: Refreshes after sync
+- **Event Details**: PR numbers, issue links, descriptions
+- **Timestamps**: Relative and absolute time display
 
-### 3. Gamification System
+### 3. Team Leaderboard
+- **XP Ranking**: Team members ranked by contributions
+- **Real Data**: Synced from GitHub and Supabase
+- **Contribution Metrics**: PRs, issues, commits, reviews
+- **Live Rankings**: Updates as activities sync
+
+### 4. AI PR Analysis (Powered by Google Gemini)
+- **Automatic Summarization**: AI analysis of pull requests
+- **Complexity Assessment**: Low/Medium/High complexity scoring
+- **Risk Detection**: Identifies potential issues
+- **Recommendations**: Actionable improvement suggestions
+- **Cached Results**: AI summaries are stored for future reference
+
+### 5. Discord Integration
+- **Webhook Setup**: Configure Discord webhook URL
+- **Event Notifications**: Real-time Discord alerts for GitHub events
+- **Embed Messages**: Rich, formatted notifications
+- **Team Notifications**: Keep team updated on GitHub activity
+
+### 6. Gamification System
 Earn XP for:
 - Opening PRs (+10 XP)
-- Merging PRs (+20 XP)
-- Reviewing code (+15 XP)
-- Fixing bugs (+25 XP)
-- Closing issues (+8 XP)
-- Daily streaks (+10 bonus)
+- Merging PRs (+25 XP)
+- Reviewing code (+5 XP)
+- Fixing bugs/Creating issues (+5-10 XP)
+- Closing issues (+10 XP)
 
 Badges:
-- 🎯 First PR
-- ⚔️ Code Warrior
-- 🤝 Team Player
-- 🐛 Bug Hunter
-- 📊 Analytics Master
-- 🔥 Streak Master
-- ⭐ Super Contributor
+- 🌱 First Steps - Open your first PR
+- 🚀 Getting Started - Open 5 PRs
+- ⭐ Contributor - Earn 100 XP
+- 💎 Active Developer - Earn 500 XP
+- 👑 Code Master - Earn 1000 XP
+- 🤝 Team Player - Review 10 PRs
+- 🎯 Issue Hunter - Close 20 issues
 
-### 4. Team Analytics
+### 7. Team Analytics Dashboard
 Real-time dashboards show:
 - Top contributors by XP
 - PR statistics
 - Review metrics
 - Activity timelines
 - Team progress
+- Streak tracking
+- Personalized recommendations
+
+---
+
+## 🆘 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Invalid API Key" | Check you copied key completely (no spaces) |
+| "Database connection failed" | Verify Supabase project isn't paused |
+| "GitHub login doesn't work" | Check callback URL matches exactly (case-sensitive) |
+| "Webhook not received" | Verify URL is accessible, webhook secret matches |
+| "AI summaries don't work" | Add GEMINI_API_KEY to environment variables |
+| "Discord bot offline" | Check bot token and public key in env vars |
+| "Port 5000 already in use" | `lsof -i :5000` then `kill -9 <PID>` |
+| "Not authenticated error on sync" | Log in with GitHub first, the app requires GitHub token |
+| "Synced 0 activities" | Check if you have recent GitHub activity, run database migrations |
+| "Activities not showing on timeline" | Verify Supabase schema is set up (run migrations first) |
+| "403 Forbidden on Dashboard" | Make sure you've logged in with GitHub first |
+| "Database error or 500 errors" | Verify you ran the full migration SQL from `supabase-schema.sql` |
+
+---
+
+## 📊 Project Structure
+
+```
+opscord/
+├── app/
+│   ├── api/              # API routes
+│   │   ├── auth/         # GitHub OAuth
+│   │   ├── discord/      # Discord integration
+│   │   ├── github/       # GitHub webhooks
+│   │   └── analytics/    # Analytics endpoints
+│   ├── dashboard/        # Dashboard page
+│   ├── admin/            # Admin panel
+│   └── layout.tsx        # Root layout
+├── components/
+│   ├── ui/               # UI components
+│   ├── dashboard.tsx     # Dashboard component
+│   ├── leaderboard.tsx   # Leaderboard
+│   └── landing-page.tsx  # Landing page
+├── lib/
+│   ├── ai.ts             # AI services (Gemini)
+│   ├── discord.ts        # Discord utilities
+│   ├── github.ts         # GitHub utilities
+│   ├── supabase.ts       # Database client
+│   ├── gamification.ts   # XP/Badge logic
+│   └── ai-services/      # Advanced AI services
+├── migrations/           # Database schema
+├── public/               # Static assets
+├── next.config.mjs       # Next.js configuration
+├── package.json          # Dependencies
+├── vercel.json           # Vercel deployment config
+└── README.md             # This file
+```
 
 ---
 
@@ -347,51 +454,6 @@ Real-time dashboards show:
 - Secure token storage in HTTP-only cookies
 - Environment variables for all secrets
 - No hardcoded credentials
-
----
-
-## 🆘 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| "Invalid API Key" | Check you copied key completely (no spaces) |
-| "Database connection failed" | Verify Supabase project isn't paused |
-| "GitHub login doesn't work" | Check callback URL matches exactly (case-sensitive) |
-| "Webhook not received" | Verify URL is accessible, webhook secret matches |
-| "AI summaries don't work" | Add GEMINI_API_KEY to environment variables |
-| "Discord bot offline" | Check bot token and public key in env vars |
-| "Port 5000 already in use" | `lsof -i :5000` then `kill -9 <PID>` |
-
----
-
-## 📊 Project Structure
-
-```
-opscord/
-├── app/
-│   ├── api/              # API routes
-│   │   ├── auth/         # GitHub OAuth
-│   │   ├── discord/      # Discord integration
-│   │   ├── github/       # GitHub webhooks
-│   │   └── analytics/    # Analytics endpoints
-│   ├── dashboard/        # Dashboard page
-│   ├── admin/            # Admin panel
-│   └── layout.tsx        # Root layout
-├── components/
-│   ├── ui/               # UI components
-│   ├── dashboard.tsx     # Dashboard component
-│   ├── leaderboard.tsx   # Leaderboard
-│   └── landing-page.tsx  # Landing page
-├── lib/
-│   ├── ai.ts             # AI services
-│   ├── discord.ts        # Discord utilities
-│   ├── github.ts         # GitHub utilities
-│   ├── supabase.ts       # Database client
-│   └── gamification.ts   # XP/Badge logic
-├── migrations/           # Database schema
-├── public/               # Static assets
-└── package.json          # Dependencies
-```
 
 ---
 

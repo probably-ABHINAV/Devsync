@@ -52,16 +52,21 @@ Analyze this PR and respond in JSON format with:
 Be concise and actionable. Focus on what matters most to reviewers.`
 
   try {
+    console.log('🤖 Calling Gemini API for PR summary...')
     const result = await model.generateContent(prompt)
     const response = result.response.text()
+    
+    console.log('✅ Received Gemini response, parsing...')
     
     // Extract JSON from response (handle markdown code blocks)
     const jsonMatch = response.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
-      throw new Error('Failed to parse AI response')
+      console.error('❌ No JSON found in response:', response.substring(0, 200))
+      throw new Error('Failed to parse AI response - no JSON found')
     }
     
     const parsed = JSON.parse(jsonMatch[0])
+    console.log('✅ Successfully parsed AI response')
     
     return {
       summary: parsed.summary || 'Summary not available',
@@ -71,8 +76,9 @@ Be concise and actionable. Focus on what matters most to reviewers.`
       complexity: parsed.complexity || 'medium'
     }
   } catch (error) {
-    console.error('AI summarization failed:', error)
-    throw new Error('Failed to generate AI summary')
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(`❌ AI summarization failed: ${errorMsg}`)
+    throw error
   }
 }
 
