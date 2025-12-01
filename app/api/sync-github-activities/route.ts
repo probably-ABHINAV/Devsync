@@ -172,10 +172,24 @@ export async function POST(request: Request) {
       return Response.json({ success: true, synced: 0, message: "No mappable activities found" })
     }
 
+    // Map activity types to GitHub event types
+    const mapActivityToEventType = (activityType: string): string => {
+      switch (activityType) {
+        case 'commit': return 'PushEvent'
+        case 'pr_opened': return 'PullRequestEvent'
+        case 'pr_merged': return 'PullRequestEvent'
+        case 'code_review': return 'PullRequestReviewEvent'
+        case 'issue_opened': return 'IssuesEvent'
+        case 'issue_closed': return 'IssuesEvent'
+        default: return 'UnknownEvent'
+      }
+    }
+
     // Store activities in Supabase
     const { error } = await supabase.from("activities").insert(
       activitiesToStore.map((activity) => ({
         user_id: userId,
+        event_type: mapActivityToEventType(activity.activity_type),
         activity_type: activity.activity_type,
         repo_name: activity.repo_name,
         pr_number: activity.pr_number || null,
