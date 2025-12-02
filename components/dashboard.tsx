@@ -971,7 +971,7 @@ export default function Dashboard({ user }: DashboardProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {recentlyUpdatedRepos.map((repo, idx) => (
                               <motion.div
-                                key={`recent-${repo.id}`}
+                                key={`recent-${repo.id || idx}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
@@ -1016,7 +1016,7 @@ export default function Dashboard({ user }: DashboardProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                               {langRepos.map((repo, idx) => (
                                 <motion.div
-                                  key={repo.id}
+                                  key={`${language}-${repo.id || repo.name}-${idx}`}
                                   initial={{ opacity: 0, y: 20 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ delay: idx * 0.05 }}

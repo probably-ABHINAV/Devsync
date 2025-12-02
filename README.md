@@ -11,7 +11,7 @@ OpsCord is an **enterprise-grade platform** that seamlessly integrates:
 - **Discord**: Real-time notifications, team commands, collaboration
 - **AI (Gemini)**: Intelligent PR summaries, issue classification, failure analysis
 - **Analytics**: Team leaderboards, contribution tracking, performance insights
-- **Gamification**: XP rewards, badges, achievement tracking
+- **Gamification**: XP rewards, badges, achievement trackingg
 
 Perfect for **engineering teams** who want to:
 ✅ Automate repetitive development tasks  

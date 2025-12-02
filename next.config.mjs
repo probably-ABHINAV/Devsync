@@ -6,8 +6,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Vercel automatically handles CORS for *.vercel.app domains
-  // No need for custom allowedDevOrigins in production
   experimental: {
     serverActions: {
       allowedOrigins: ['*']

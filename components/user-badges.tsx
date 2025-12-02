@@ -45,7 +45,7 @@ export default function UserBadges({ userId }: UserBadgesProps) {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`/api/analytics/stats/${userId}`)
+      const response = await fetch(`/api/analytics/stats?username=${userId}`)
       if (response.ok) {
         const data = await response.json()
         setBadges(data.badges || [])

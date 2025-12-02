@@ -1,5 +1,5 @@
 import { getServiceSupabase } from '@/lib/supabase'
-import { cookies } from 'next/headers'
+import { checkAndAwardBadges } from '@/lib/gamification'
 
 export async function GET(request: Request) {
   try {
@@ -16,41 +16,64 @@ export async function GET(request: Request) {
       .single()
 
     if (!user) {
-      return Response.json({ success: true, stats: { total_activities: 0, activities_by_type: {}, last_sync: null, sync_count: 0 } })
+      return Response.json({ 
+        success: true, 
+        stats: null,
+        badges: []
+      })
     }
 
-    // Get activity stats
-    const { data: activities } = await supabase
-      .from('activities')
-      .select('activity_type, created_at')
+    // Get gamification stats
+    let { data: stats } = await supabase
+      .from('user_stats')
+      .select('*')
       .eq('user_id', user.id)
+      .single()
 
-    if (!activities) {
-      return Response.json({ success: true, stats: { total_activities: 0, activities_by_type: {}, last_sync: null, sync_count: 0 } })
+    // If no stats exist, create default ones
+    if (!stats) {
+      const { data: newStats } = await supabase
+        .from('user_stats')
+        .insert({
+          user_id: user.id,
+          xp: 0,
+          level: 1,
+          prs_opened: 0,
+          prs_merged: 0,
+          prs_reviewed: 0,
+          issues_created: 0,
+          issues_closed: 0,
+          commits_count: 0,
+        })
+        .select()
+        .single()
+      
+      stats = newStats
     }
 
-    // Calculate stats
-    const activities_by_type: Record<string, number> = {}
-    let lastSync: string | null = null
+    // Check and award badges based on current stats
+    await checkAndAwardBadges(user.id)
 
-    activities.forEach(act => {
-      activities_by_type[act.activity_type] = (activities_by_type[act.activity_type] || 0) + 1
-      if (!lastSync || new Date(act.created_at) > new Date(lastSync)) {
-        lastSync = act.created_at
-      }
-    })
+    // Get user's badges
+    const { data: badges } = await supabase
+      .from('user_badges')
+      .select(`
+        *,
+        badges:badge_id (*)
+      `)
+      .eq('user_id', user.id)
 
     return Response.json({
       success: true,
-      stats: {
-        total_activities: activities.length,
-        activities_by_type,
-        last_sync: lastSync,
-        sync_count: activities.length
-      }
+      stats,
+      badges: badges || []
     })
   } catch (error) {
     console.error('Stats error:', error)
-    return Response.json({ success: true, stats: { total_activities: 0, activities_by_type: {}, last_sync: null, sync_count: 0 } })
+    return Response.json({ 
+      success: true, 
+      stats: null,
+      badges: []
+    })
   }
 }

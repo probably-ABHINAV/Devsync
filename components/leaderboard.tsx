@@ -55,12 +55,12 @@ function AnimatedStatMini({ value, icon: Icon, label, gradient, delay, inView }:
   delay: number,
   inView: boolean
 }) {
-  const count = useCounter(value, 1500, inView)
+  const count = useCounter(value, 1500, true)
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      initial={{ opacity: 1, y: 0, scale: 1 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, type: "spring", stiffness: 100 }}
       whileHover={{ scale: 1.03, y: -3 }}
       className="relative p-4 rounded-xl border border-white/10 bg-[#0d0d1a]/80 backdrop-blur-xl overflow-hidden group"
@@ -91,7 +91,7 @@ function AnimatedStatMini({ value, icon: Icon, label, gradient, delay, inView }:
           <span className="text-xs text-gray-400">{label}</span>
         </div>
         <motion.p 
-          className={`text-2xl font-bold bg-gradient-to-r ${gradient.replace('/10', '-400').replace('from-', 'from-').replace('to-', 'to-')} bg-clip-text text-transparent`}
+          className="text-2xl font-bold text-white"
         >
           {count}
         </motion.p>
@@ -104,7 +104,7 @@ export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
-  const inView = useInView(containerRef, { once: true, margin: "-50px" })
+  const inView = useInView(containerRef, { once: false, margin: "-50px" }) || true
 
   useEffect(() => {
     fetchLeaderboard()
@@ -113,9 +113,15 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       const response = await fetch("/api/analytics/leaderboard?limit=10")
+      const data = await response.json()
+      console.log("Leaderboard response:", data)
+      
       if (response.ok) {
-        const data = await response.json()
-        setLeaderboard(data.leaderboard || [])
+        const leaderboardData = data.leaderboard || []
+        console.log("Setting leaderboard with", leaderboardData.length, "entries")
+        setLeaderboard(leaderboardData)
+      } else {
+        console.error("Leaderboard API error:", data)
       }
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error)
@@ -234,8 +240,8 @@ export default function Leaderboard() {
 
       {topContributor && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
+          initial={{ opacity: 1, scale: 1, y: 0 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
           whileHover={{ scale: 1.02 }}
           className="relative p-5 rounded-2xl border border-yellow-500/30 bg-[#0d0d1a]/80 backdrop-blur-xl overflow-hidden"
@@ -345,8 +351,8 @@ export default function Leaderboard() {
           return (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -30 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
+              initial={{ opacity: 1, x: 0 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 + index * 0.05, type: "spring", stiffness: 100 }}
               whileHover={{ x: 8, scale: 1.01 }}
             >
