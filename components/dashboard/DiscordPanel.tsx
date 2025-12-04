@@ -10,8 +10,8 @@ interface DiscordPanelProps {
 }
 
 export default function DiscordPanel({ 
-  serverId = "REPLACE_SERVER_ID", 
-  channelId = "REPLACE_CHANNEL_ID" 
+  serverId = "1438479945667051622", 
+  channelId = "1438479946262777938" 
 }: DiscordPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
