@@ -1515,8 +1515,8 @@ export default function Dashboard({ user }: DashboardProps) {
 
                 <TabsContent value="discord" className="mt-8">
                   <DiscordPanel 
-                    serverId={selectedChannel.serverId || "REPLACE_SERVER_ID"} 
-                    channelId={selectedChannel.channelId || "REPLACE_CHANNEL_ID"} 
+                    serverId={selectedChannel.serverId || "1438479945667051622"} 
+                    channelId={selectedChannel.channelId || "1438479946262777938"} 
                   />
                 </TabsContent>
               </AnimatePresence>
