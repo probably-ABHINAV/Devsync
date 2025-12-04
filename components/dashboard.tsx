@@ -16,6 +16,7 @@ import ActivityFeed, { ActivityFeedRef } from "./activity-feed"
 import Leaderboard from "./leaderboard"
 import UserBadges from "./user-badges"
 import DiscordChannelSelector from "./discord-channel-selector"
+import DiscordPanel from "./dashboard/DiscordPanel"
 import { 
   LogOut, Github, MessageCircle, Activity, Trophy, Award, Settings, 
   Bell, GitPullRequest, GitCommit, AlertCircle, CheckCircle, 
@@ -825,7 +826,7 @@ export default function Dashboard({ user }: DashboardProps) {
           <motion.div variants={itemVariants}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="relative">
-                <TabsList className="w-full max-w-2xl mx-auto grid grid-cols-4 bg-white/5 border border-white/10 p-1.5 rounded-xl backdrop-blur-xl relative overflow-hidden">
+                <TabsList className="w-full max-w-3xl mx-auto grid grid-cols-5 bg-white/5 border border-white/10 p-1.5 rounded-xl backdrop-blur-xl relative overflow-hidden">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10"
                     animate={{
@@ -839,6 +840,7 @@ export default function Dashboard({ user }: DashboardProps) {
                     { value: "activity", icon: Activity, label: "Activity", gradient: "from-purple-500/20 to-pink-500/20" },
                     { value: "analytics", icon: BarChart3, label: "Analytics", gradient: "from-orange-500/20 to-red-500/20" },
                     { value: "notifications", icon: Bell, label: "Notifications", gradient: "from-emerald-500/20 to-teal-500/20" },
+                    { value: "discord", icon: MessageCircle, label: "Discord", gradient: "from-indigo-500/20 to-purple-500/20" },
                   ].map((tab) => (
                     <TabsTrigger 
                       key={tab.value}
@@ -1509,6 +1511,13 @@ export default function Dashboard({ user }: DashboardProps) {
                       )}
                     </div>
                   </motion.div>
+                </TabsContent>
+
+                <TabsContent value="discord" className="mt-8">
+                  <DiscordPanel 
+                    serverId={selectedChannel.serverId || "REPLACE_SERVER_ID"} 
+                    channelId={selectedChannel.channelId || "REPLACE_CHANNEL_ID"} 
+                  />
                 </TabsContent>
               </AnimatePresence>
             </Tabs>
