@@ -27,7 +27,7 @@ export async function summarizePR(
     throw new Error('Gemini API not configured - please add GEMINI_API_KEY')
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const prompt = `You are an expert code reviewer analyzing a GitHub pull request. Provide a comprehensive yet concise analysis.
 
@@ -92,7 +92,7 @@ export async function generateIssueFromDiscord(description: string): Promise<{
     throw new Error('Gemini API not configured - please add GEMINI_API_KEY')
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const prompt = `Convert this Discord message into a well-formatted GitHub issue.
 
@@ -161,7 +161,7 @@ export async function generateDeploymentSummary(
     }
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const statusContext = deployment.status === 'succeeded' 
     ? 'successful deployment'

@@ -43,7 +43,7 @@ export async function generateReleaseNotes(input: ReleaseNotesInput): Promise<Re
     throw new Error('Gemini API not configured')
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const prSummaries = input.prs.map(pr => 
     `- PR #${pr.number}: ${pr.title} (by @${pr.author}) [${pr.labels.join(', ') || 'no labels'}]`

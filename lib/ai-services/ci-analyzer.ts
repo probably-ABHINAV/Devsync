@@ -102,7 +102,7 @@ export async function analyzeCIFailure(input: CIRunInput): Promise<CIFailureAnal
   const patternInfo = detectErrorPatterns(input.logs)
   const detectedFiles = extractAffectedFiles(input.logs)
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const truncatedLogs = input.logs.slice(-10000)
 

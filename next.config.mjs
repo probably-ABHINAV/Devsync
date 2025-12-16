@@ -6,6 +6,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  allowedDevOrigins: [
+    '*.replit.dev',
+    '*.sisko.replit.dev',
+    '*.repl.co',
+    '127.0.0.1',
+    'localhost'
+  ],
   experimental: {
     serverActions: {
       allowedOrigins: ['*']

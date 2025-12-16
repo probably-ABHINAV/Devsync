@@ -69,7 +69,7 @@ export async function classifyIssue(input: IssueClassificationInput): Promise<Is
     throw new Error('Gemini API not configured')
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const prompt = `You are an expert at analyzing and classifying GitHub issues. Analyze the following issue and provide a detailed classification.
 
