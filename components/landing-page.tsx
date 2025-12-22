@@ -2,6 +2,7 @@
 import { motion, useScroll, useTransform, useInView, AnimatePresence, useMotionValue, useSpring } from "framer-motion"
 import { Zap, Shield, ArrowRight, Check, Github, MessageCircle, Users, Star, BarChart3, Bot, CheckCircle2, Circle, Rocket, Quote, ChevronLeft, ChevronRight, Sparkles, Code2, Activity, Globe } from "lucide-react"
 import { useRef, useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 
 function useCounter(end: number, duration: number = 2000, inView: boolean) {
   const [count, setCount] = useState(0)
@@ -507,7 +508,13 @@ export default function LandingPage() {
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
-              <img src="/opscord-logo.jpg" alt="Opscord" className="relative w-11 h-11 rounded-xl object-cover ring-2 ring-white/10" />
+              <Image 
+                src="/opscord-logo.jpg" 
+                alt="Opscord" 
+                width={44} 
+                height={44} 
+                className="relative rounded-xl object-cover ring-2 ring-white/10" 
+              />
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Opscord</span>
           </motion.div>
@@ -1031,7 +1038,7 @@ export default function LandingPage() {
             <Rocket className="w-4 h-4 text-cyan-400" />
             <span className="text-sm font-medium text-gray-300">Product Roadmap</span>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">What's Coming Next</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">What&apos;s Coming Next</h2>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Our journey from MVP to enterprise SaaS platform
           </p>
@@ -1355,7 +1362,13 @@ export default function LandingPage() {
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 3, repeat: Infinity }}
                 />
-                <img src="/opscord-logo.jpg" alt="Opscord" className="relative w-10 h-10 rounded-xl object-cover" />
+                <Image 
+                  src="/opscord-logo.jpg" 
+                  alt="Opscord" 
+                  width={40} 
+                  height={40} 
+                  className="relative rounded-xl object-cover" 
+                />
               </div>
               <span className="font-bold text-lg bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Opscord</span>
             </motion.div>

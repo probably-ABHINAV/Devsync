@@ -2,6 +2,7 @@
 import { motion } from "framer-motion"
 import { Github, ArrowRight, Gauge } from "lucide-react"
 import { useState } from "react"
+import Image from "next/image"
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -59,7 +60,13 @@ export default function LoginPage() {
             {/* Header */}
             <motion.div variants={itemVariants} className="space-y-4 text-center">
               <div className="flex justify-center mb-2">
-                <img src="/opscord-logo.jpg" alt="Opscord" className="w-16 h-16 rounded-xl object-cover shadow-lg" />
+                <Image 
+                  src="/opscord-logo.jpg" 
+                  alt="Opscord" 
+                  width={64} 
+                  height={64} 
+                  className="rounded-xl object-cover shadow-lg" 
+                />
               </div>
               <h1 className="text-3xl font-bold text-foreground">Welcome to Opscord</h1>
               <p className="text-muted-foreground text-sm">Monitor GitHub. Sync to Discord. Instantly.</p>
@@ -88,7 +95,7 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="px-2 bg-gradient-to-br from-card/80 to-background/80 text-muted-foreground">
-                  What you'll get
+                  What you&apos;ll get
                 </span>
               </div>
             </motion.div>
