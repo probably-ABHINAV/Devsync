@@ -1,15 +1,36 @@
 "use client"
 
-import { useEffect, useState, forwardRef, useImperativeHandle } from "react"
+import { Switch } from "@/components/ui/switch"
+
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { Badge } from "@/components/ui/badge"
-import { GitPullRequest, GitMerge, GitCommit, AlertCircle, CheckCircle, X, Clock, MessageSquare, Code, Sparkles } from "lucide-react"
+import { 
+  GitPullRequest, 
+  GitMerge, 
+  MessageSquare, 
+  AlertCircle, 
+  CheckCircle, 
+  GitCommit, 
+  Code, 
+  Sparkles, 
+  Clock 
+} from "lucide-react"
+
+import { AISummaryCard } from "@/components/ai/ai-summary-card"
+import { TimelineItem } from "@/components/timeline/timeline-item"
+import { TimelineDrawer } from "@/components/timeline/timeline-drawer"
+
+export interface ActivityFeedRef {
+  refresh: () => Promise<void>
+}
 
 interface Activity {
   id: string
   activity_type: string
+  source: string // Added source
   repo_name: string
   pr_number?: number
   issue_number?: number
@@ -17,15 +38,75 @@ interface Activity {
   description: string
   metadata: any
   created_at: string
+  attention_score?: number
 }
 
-export interface ActivityFeedRef {
-  refresh: () => Promise<void>
+const RelatedContextPanel = ({ query }: { query: string }) => {
+  const [results, setResults] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const res = await fetch('/api/context/related', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: query })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setResults(data.results || [])
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRelated()
+  }, [query])
+
+  if (loading) {
+    return <div className="p-4 flex justify-center"><Spinner className="w-4 h-4 text-cyan-400" /></div>
+  }
+
+  if (results.length === 0) {
+    return <div className="p-3 text-xs text-gray-500 text-center">No related context found.</div>
+  }
+
+  return (
+    <div className="p-3 space-y-2 bg-black/20 rounded-b-xl border-t border-white/5">
+      <div className="flex items-center gap-2 mb-2">
+         <Sparkles className="w-3 h-3 text-cyan-400" />
+         <span className="text-xs font-semibold text-cyan-400">AI Context Analysis</span>
+      </div>
+      {results.map((item: any) => (
+        <div key={item.id} className="flex items-start gap-2 p-2 rounded bg-white/5 border border-white/5">
+           <div className="mt-0.5">
+             {item.source === 'github' ? <GitCommit className="w-3 h-3 text-purple-400" /> : 
+              item.source === 'jira' ? <AlertCircle className="w-3 h-3 text-blue-400" /> :
+              <MessageSquare className="w-3 h-3 text-gray-400" />}
+           </div>
+           <div>
+             <div className="text-xs text-gray-200 font-medium line-clamp-1">{item.title}</div>
+             <div className="text-[10px] text-gray-500 flex items-center gap-2">
+               <span>{Math.round(item.similarity * 100)}% relevant</span>
+               <span>•</span>
+               <span>{new Date(item.created_at).toLocaleDateString()}</span>
+             </div>
+           </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const ActivityFeed = forwardRef<ActivityFeedRef, {}>((_props, ref) => {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
+  const [focusMode, setFocusMode] = useState(false)
+  const [filterSource, setFilterSource] = useState<string>('all') // New Filter State
+  const [expandedId, setExpandedId] = useState<string | null>(null) // State for context expansion
 
   useImperativeHandle(ref, () => ({
     refresh: fetchActivities
@@ -38,7 +119,7 @@ const ActivityFeed = forwardRef<ActivityFeedRef, {}>((_props, ref) => {
   const fetchActivities = async () => {
     setLoading(true)
     try {
-      const response = await fetch("/api/analytics/activity?limit=10")
+      const response = await fetch("/api/analytics/activity?limit=50")
       if (response.ok) {
         const data = await response.json()
         setActivities(data.activities || [])
@@ -49,6 +130,13 @@ const ActivityFeed = forwardRef<ActivityFeedRef, {}>((_props, ref) => {
       setLoading(false)
     }
   }
+
+  // Filter activities based on Focus Mode and Source
+  const filteredActivities = activities.filter(a => {
+    if (focusMode && (a.attention_score || 0) < 40) return false
+    if (filterSource !== 'all' && a.source !== filterSource) return false
+    return true
+  })
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -243,211 +331,70 @@ const ActivityFeed = forwardRef<ActivityFeedRef, {}>((_props, ref) => {
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
       
+      <div className="flex flex-col gap-4 mb-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            Timeline
+            {loading && <Spinner className="w-3 h-3" />}
+            </h3>
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Focus Mode</span>
+                <Switch 
+                    checked={focusMode} 
+                    onCheckedChange={setFocusMode} 
+                    className="data-[state=checked]:bg-cyan-500"
+                />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {['all', 'github', 'jira', 'gitlab', 'slack'].map(source => (
+                <button
+                    key={source}
+                    onClick={() => setFilterSource(source)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all capitalize border ${
+                        filterSource === source 
+                        ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' 
+                        : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                    }`}
+                >
+                    {source === 'all' ? 'All' : source}
+                </button>
+            ))}
+          </div>
+      </div>
       <div className="space-y-4">
+        {/* AI Daily Summary (Mock for Phase 3) */}
+        {!focusMode && (
+             <AISummaryCard 
+                 type="daily"
+                 title="Daily Digest: Deployment & High Velocity"
+                 content="Team merged 12 PRs today. Velocity is up 15%. Deployment to production (v2.4.0) triggered 3 alerts in #ops which were auto-resolved."
+                 confidence={0.92}
+             />
+        )}
+
         <AnimatePresence mode="popLayout">
-          {activities.map((activity, index) => {
-            const styles = getActivityStyles(activity.activity_type)
-            const isFirst = index === 0
-            
-            return (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -30, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 30, scale: 0.95 }}
-                transition={{ delay: index * 0.08, type: "spring", stiffness: 100 }}
-                className="relative"
-                layout
-              >
-                <div className="flex gap-4">
-                  <div className="relative z-10 flex-shrink-0">
-                    <motion.div 
-                      className={`w-14 h-14 rounded-xl ${styles.iconBg} flex items-center justify-center shadow-lg relative overflow-hidden`}
-                      whileHover={{ scale: 1.15, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      style={{
-                        boxShadow: `0 0 20px ${styles.shadowColor}`,
-                      }}
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-white/20"
-                        animate={{
-                          x: ["-100%", "100%"],
+            <div className="space-y-4">
+                {filteredActivities.map((activity) => (
+                    <TimelineItem 
+                        key={activity.id} 
+                        activity={activity} 
+                        onClick={() => {
+                            setExpandedId(null)
+                            setSelectedActivity(activity)
+                            setDrawerOpen(true)
                         }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                        }}
-                        style={{
-                          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-                        }}
-                      />
-                      <motion.div 
-                        className={styles.iconColor}
-                        animate={{ 
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        {getActivityIcon(activity.activity_type)}
-                      </motion.div>
-                    </motion.div>
-                    
-                    {isFirst && (
-                      <>
-                        <motion.div
-                          className={`absolute -inset-2 rounded-xl ${styles.pulseColor} opacity-30`}
-                          animate={{ 
-                            scale: [1, 1.3, 1],
-                            opacity: [0.3, 0, 0.3]
-                          }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                        <motion.div
-                          className={`absolute -inset-3 rounded-xl ${styles.pulseColor} opacity-20`}
-                          animate={{ 
-                            scale: [1, 1.4, 1],
-                            opacity: [0.2, 0, 0.2]
-                          }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: 0.3
-                          }}
-                        />
-                      </>
-                    )}
-                  </div>
-                  
-                  <motion.div 
-                    className={`flex-1 p-4 rounded-xl border ${styles.borderColor} bg-[#0d0d1a]/80 backdrop-blur-xl hover:bg-white/[0.08] transition-all group relative overflow-hidden`}
-                    whileHover={{ x: 8, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <motion.div 
-                      className={`absolute inset-0 bg-gradient-to-r ${styles.glowColor} to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl`}
                     />
-                    
-                    <motion.div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.03) 55%, transparent 60%)",
-                        backgroundSize: "200% 100%",
-                      }}
-                      animate={{
-                        backgroundPosition: ["200% 0%", "-200% 0%"],
-                      }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                    />
-                    
-                    <div className="relative">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <Badge 
-                              variant="secondary" 
-                              className={`text-xs px-2 py-0.5 ${styles.iconBg} text-white border-0`}
-                            >
-                              {getActivityLabel(activity.activity_type)}
-                            </Badge>
-                            {isFirst && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: "spring", stiffness: 500 }}
-                              >
-                                <Badge 
-                                  variant="secondary" 
-                                  className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1"
-                                >
-                                  <motion.div
-                                    animate={{ 
-                                      rotate: [0, 180, 360],
-                                      scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{ duration: 3, repeat: Infinity }}
-                                  >
-                                    <Sparkles className="w-3 h-3" />
-                                  </motion.div>
-                                  Latest
-                                </Badge>
-                              </motion.div>
-                            )}
-                          </div>
-                          <h4 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">
-                            {activity.title}
-                          </h4>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <motion.div 
-                            className="flex items-center gap-1 text-xs text-gray-400"
-                            animate={{ opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            <Clock className="w-3 h-3" />
-                            <span>{formatTime(activity.created_at)}</span>
-                          </motion.div>
-                          <p className="text-[10px] text-gray-500 mt-0.5">
-                            {formatFullDate(activity.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {activity.description && (
-                        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                          {activity.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center gap-3 text-xs">
-                        <motion.span 
-                          className="font-mono px-2 py-1 rounded bg-white/5 text-gray-300 border border-white/10"
-                          whileHover={{ scale: 1.05, borderColor: "rgba(6, 182, 212, 0.5)" }}
-                        >
-                          {activity.repo_name}
-                        </motion.span>
-                        {activity.pr_number && (
-                          <motion.span 
-                            className="flex items-center gap-1 text-purple-400"
-                            whileHover={{ scale: 1.1 }}
-                          >
-                            <GitPullRequest className="w-3 h-3" />
-                            #{activity.pr_number}
-                          </motion.span>
-                        )}
-                        {activity.issue_number && (
-                          <motion.span 
-                            className="flex items-center gap-1 text-yellow-400"
-                            whileHover={{ scale: 1.1 }}
-                          >
-                            <AlertCircle className="w-3 h-3" />
-                            #{activity.issue_number}
-                          </motion.span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{
-                        background: `linear-gradient(90deg, transparent, ${styles.shadowColor}, transparent)`,
-                      }}
-                      initial={{ scaleX: 0 }}
-                      whileHover={{ scaleX: 1 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </motion.div>
-                </div>
-              </motion.div>
-            )
-          })}
+                ))}
+            </div>
         </AnimatePresence>
+
+        <TimelineDrawer 
+            activity={selectedActivity || activities[0]} 
+            open={drawerOpen} 
+            onOpenChange={setDrawerOpen} 
+        />
       </div>
     </div>
   )

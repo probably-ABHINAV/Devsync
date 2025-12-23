@@ -4,15 +4,11 @@ import type { NextRequest } from "next/server"
 export async function GET(request: NextRequest) {
   const clientId = process.env.GITHUB_CLIENT_ID
 
-  // Get the base URL from environment or request headers
-  let baseUrl = process.env.NEXT_PUBLIC_APP_URL
-
-  if (!baseUrl) {
-    // Auto-detect from request headers (for production)
-    const host = request.headers.get("host") || "localhost:5000"
-    const proto = request.headers.get("x-forwarded-proto") || "http"
-    baseUrl = `${proto}://${host}`
-  }
+  // Get the base URL specifically for the callback
+  // We prioritize the request origin/host to ensure localhost callbacks work even if NEXT_PUBLIC_APP_URL is set to prod
+  const host = request.headers.get("host") || "localhost:5000"
+  const proto = request.headers.get("x-forwarded-proto") || "http"
+  const baseUrl = `${proto}://${host}`
 
   const redirectUri = `${baseUrl}/api/auth/callback`
 
