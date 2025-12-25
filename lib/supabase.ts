@@ -1,16 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not configured. Some features may not work.')
 }
 
-// Prevent build crash if env vars are missing
-export const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : ({} as any)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Server-side client with service role (for admin operations)
 export function getServiceSupabase() {
@@ -88,47 +85,6 @@ export interface Database {
           webhook_url?: string
           created_at?: string
           updated_at?: string
-        }
-      }
-      activities: {
-        Row: {
-          id: string
-          user_id: string
-          repo_name: string
-          event_type: string
-          activity_type: string
-          pr_number: number | null
-          issue_number: number | null
-          title: string
-          description: string | null
-          metadata: any
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          repo_name: string
-          event_type: string
-          activity_type: string
-          pr_number?: number | null
-          issue_number?: number | null
-          title: string
-          description?: string | null
-          metadata?: any
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          repo_name?: string
-          event_type?: string
-          activity_type?: string
-          pr_number?: number | null
-          issue_number?: number | null
-          title?: string
-          description?: string | null
-          metadata?: any
-          created_at?: string
         }
       }
       webhooks: {
